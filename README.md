@@ -47,6 +47,19 @@ An agent can prepare a payment, but AgentPay keeps `molliePaymentId:null` until 
 4. **Money only moves at commit.** Reversible intents do not call Mollie until confirm or auto-commit.
 5. **Every step is audited.** The audit trail records who asked, what was checked, why it passed or failed, and what moved.
 
+## Features
+
+- **Reversible payment intents.** Agents prepare payments first; capture stays delayed until a human confirms or the undo window expires.
+- **Human review controls.** A wallet-style surface exposes pending intents, verifier results, undo, and commit actions.
+- **Deterministic spend policy.** Transaction caps, daily caps, thresholds, and merchant allowlists run in code before any payment is executed.
+- **Independent verifier.** A second guardrail can block suspicious prompts, merchant/claim mismatches, and unsafe requests before money moves.
+- **Credit spend catalog.** Agents can request approved providers such as inference, web-data, or browser automation credits while AgentPay owns the price, merchant, claim, and audit trail.
+- **Agent-to-agent payments.** Provider agents can publish a service and price, receive A2A payments, and accrue simulated earnings through the same policy and verifier path.
+- **JavaScript SDK.** `preparePayment({ provider, runId })` is the recommended agent entrypoint; app-owned deterministic amounts can use `amountCents`.
+- **MCP tools.** Agent runtimes can call `agentpay.prepare_payment`, list pending intents, undo, confirm, pay another agent, and fetch payment status.
+- **Mollie rail with simulation mode.** Local demos run without moving money; Mollie test/live rails can execute commits when configured.
+- **Audit and durability.** Every decision is recorded, and the MVP can persist local state through `AGENTPAY_DATA_FILE`.
+
 ## Quickstart
 
 ```bash
