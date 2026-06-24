@@ -119,6 +119,64 @@ export const centsToMollie = (cents) => (cents / 100).toFixed(2);
 export const formatMoney = (cents, currency = 'EUR') =>
   `${(cents / 100).toFixed(2).replace('.', ',')} ${currency}`;
 
+// --- Agent policy profiles ------------------------------------------------
+
+export const AGENT_POLICY_TEMPLATES = Object.freeze({
+  research_agent: Object.freeze({
+    label: 'Research agent',
+    maxPerTxCents: 2500,
+    maxPerDayCents: 10000,
+    humanApprovalThresholdCents: 1500,
+    allowedMerchants: Object.freeze(['OpenRouter', 'Firecrawl', 'Browserbase']),
+  }),
+  developer_agent: Object.freeze({
+    label: 'Developer agent',
+    maxPerTxCents: 5000,
+    maxPerDayCents: 20000,
+    humanApprovalThresholdCents: 2500,
+    allowedMerchants: Object.freeze(['OpenAI API', 'GitHub', 'AWS']),
+  }),
+  support_agent: Object.freeze({
+    label: 'Support agent',
+    maxPerTxCents: 3000,
+    maxPerDayCents: 15000,
+    humanApprovalThresholdCents: 1500,
+    allowedMerchants: Object.freeze(['Intercom', 'Zendesk', 'OpenAI API']),
+  }),
+  procurement_agent: Object.freeze({
+    label: 'Procurement agent',
+    maxPerTxCents: 100000,
+    maxPerDayCents: 200000,
+    humanApprovalThresholdCents: 10000,
+    allowedMerchants: Object.freeze([]),
+  }),
+});
+
+export const policyTemplateIds = () => Object.keys(AGENT_POLICY_TEMPLATES);
+
+export const policyProfileLabel = (profile) =>
+  AGENT_POLICY_TEMPLATES[profile]?.label ?? 'Custom policy';
+
+export function policyFromTemplate(profile = 'developer_agent', overrides = {}) {
+  const template = AGENT_POLICY_TEMPLATES[profile];
+  if (!template) throw new Error(`Unknown policy profile: ${profile}`);
+  return {
+    maxPerTxCents: overrides.maxPerTxCents ?? template.maxPerTxCents,
+    maxPerDayCents: overrides.maxPerDayCents ?? template.maxPerDayCents,
+    approvalThresholdCents: overrides.approvalThresholdCents ?? overrides.humanApprovalThresholdCents ?? template.humanApprovalThresholdCents,
+    allowedMerchants: [...(overrides.allowedMerchants ?? template.allowedMerchants)],
+  };
+}
+
+function customPolicy(overrides = {}) {
+  return {
+    maxPerTxCents: overrides.maxPerTxCents ?? 5000,
+    maxPerDayCents: overrides.maxPerDayCents ?? 20000,
+    approvalThresholdCents: overrides.approvalThresholdCents ?? overrides.humanApprovalThresholdCents ?? 10000,
+    allowedMerchants: [...(overrides.allowedMerchants ?? [])],
+  };
+}
+
 // --- Helpers HTML (deplaces depuis l'ancien server.js) --------------------
 
 export const escapeHtml = (value) => String(value ?? '')
@@ -158,9 +216,15 @@ const makeToken = (id) => `agt_${id.replace('agt-', '')}_${Math.random().toStrin
 // Handle public d'adressage A2A (ex: "@data-provider"). Slug du nom + suffixe unique.
 const slug = (name) => String(name).toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-export function createAgent({ accountId, name, policy, role = 'payer', service = null, handle }) {
+export function createAgent({ accountId, name, policy, policyProfile, role = 'payer', service = null, handle }) {
   const id = nextId('agent', 'agt');
   const token = makeToken(id);
+  const effectiveProfile = policyProfile ?? (policy ? 'custom' : 'developer_agent');
+  const resolvedPolicy = policyProfile
+    ? policyFromTemplate(policyProfile, policy)
+    : policy
+      ? customPolicy(policy)
+      : policyFromTemplate('developer_agent');
   const agent = {
     id,
     accountId,
@@ -169,12 +233,8 @@ export function createAgent({ accountId, name, policy, role = 'payer', service =
     handle: handle ?? `@${slug(name)}-${id.replace('agt-', '')}`, // adresse A2A
     role,            // 'payer' (declenche des paiements) | 'provider' (rend un service paye)
     service,         // { label, priceCents } si provider
-    policy: {
-      maxPerTxCents: policy?.maxPerTxCents ?? 5000,        // 50 EUR / transaction
-      maxPerDayCents: policy?.maxPerDayCents ?? 20000,     // 200 EUR / jour
-      approvalThresholdCents: policy?.approvalThresholdCents ?? 10000, // 10000 centimes -> validation humaine au-dela
-      allowedMerchants: policy?.allowedMerchants ?? [],    // vide = aucune restriction de marchand
-    },
+    policyProfile: effectiveProfile,
+    policy: resolvedPolicy,
     earningsCents: 0, // total encaisse via A2A (cote provider)
     ledger: [],       // credits A2A recus : { fromAgentId, amountCents, paymentId, at }
     createdAt: new Date().toISOString(),

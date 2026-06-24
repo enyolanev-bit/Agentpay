@@ -2,7 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { DECISION, decide } from '../policy.js';
-import { createAccount, createAgent, createPayment, updatePayment } from '../store.js';
+import {
+  AGENT_POLICY_TEMPLATES,
+  createAccount,
+  createAgent,
+  createPayment,
+  policyFromTemplate,
+  updatePayment,
+} from '../store.js';
 
 function makeAgent(policy = {}) {
   const account = createAccount({ name: `Test ${Date.now()} ${Math.random()}` });
@@ -93,4 +100,72 @@ test('decide REJECTED si le marchand est hors allowlist', () => {
 
   assert.equal(result.decision, DECISION.REJECTED);
   assert.match(result.reasons.join(' '), /absent de l'allowlist/);
+});
+
+test('policy templates expose deterministic spending envelopes in cents', () => {
+  assert.deepEqual(Object.keys(AGENT_POLICY_TEMPLATES).sort(), [
+    'developer_agent',
+    'procurement_agent',
+    'research_agent',
+    'support_agent',
+  ]);
+
+  for (const template of Object.values(AGENT_POLICY_TEMPLATES)) {
+    assert.equal(Number.isInteger(template.maxPerTxCents), true);
+    assert.equal(Number.isInteger(template.maxPerDayCents), true);
+    assert.equal(Number.isInteger(template.humanApprovalThresholdCents), true);
+    assert.ok(template.maxPerTxCents > 0);
+    assert.ok(template.maxPerDayCents >= template.maxPerTxCents);
+    assert.ok(template.humanApprovalThresholdCents > 0);
+    assert.ok(template.humanApprovalThresholdCents <= template.maxPerTxCents);
+    assert.ok(Array.isArray(template.allowedMerchants));
+  }
+});
+
+test('createAgent applies a selected policy template', () => {
+  const account = createAccount({ name: `Template ${Date.now()} ${Math.random()}` });
+  const agent = createAgent({
+    accountId: account.id,
+    name: 'Research Agent',
+    policyProfile: 'research_agent',
+  });
+
+  assert.equal(agent.policyProfile, 'research_agent');
+  assert.equal(agent.policy.maxPerTxCents, AGENT_POLICY_TEMPLATES.research_agent.maxPerTxCents);
+  assert.equal(agent.policy.maxPerDayCents, AGENT_POLICY_TEMPLATES.research_agent.maxPerDayCents);
+  assert.equal(agent.policy.approvalThresholdCents, AGENT_POLICY_TEMPLATES.research_agent.humanApprovalThresholdCents);
+  assert.deepEqual(agent.policy.allowedMerchants, ['OpenRouter', 'Firecrawl', 'Browserbase']);
+  assert.notEqual(agent.policy.allowedMerchants, AGENT_POLICY_TEMPLATES.research_agent.allowedMerchants);
+});
+
+test('createAgent with policy and no profile preserves custom policy defaults', () => {
+  const account = createAccount({ name: `Custom ${Date.now()} ${Math.random()}` });
+  const agent = createAgent({
+    accountId: account.id,
+    name: 'Legacy Policy Agent',
+    policy: {
+      maxPerTxCents: 7500,
+    },
+  });
+
+  assert.equal(agent.policyProfile, 'custom');
+  assert.equal(agent.policy.maxPerTxCents, 7500);
+  assert.equal(agent.policy.maxPerDayCents, 20000);
+  assert.equal(agent.policy.approvalThresholdCents, 10000);
+  assert.deepEqual(agent.policy.allowedMerchants, []);
+});
+
+test('policyFromTemplate applies deterministic overrides without changing amount units', () => {
+  const policy = policyFromTemplate('support_agent', {
+    maxPerTxCents: 4500,
+    humanApprovalThresholdCents: 2200,
+    allowedMerchants: ['Helpdesk Sandbox'],
+  });
+
+  assert.deepEqual(policy, {
+    maxPerTxCents: 4500,
+    maxPerDayCents: AGENT_POLICY_TEMPLATES.support_agent.maxPerDayCents,
+    approvalThresholdCents: 2200,
+    allowedMerchants: ['Helpdesk Sandbox'],
+  });
 });
