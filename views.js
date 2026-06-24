@@ -693,14 +693,14 @@ export const renderCreditTopupDemo = ({ account }) => {
       <td><b>${formatMoney(pay.amountCents, pay.currency)}</b></td>
       <td>${badge(pay.status)}</td>
       <td>${pay.molliePaymentId ? `<span class="mono pill">${escapeHtml(pay.molliePaymentId)}</span>` : '<span class="mono pill">null until commit</span>'}</td>
-    </tr>`).join('') || '<tr><td colspan="5" class="pill">No credit intents yet. Run a scenario.</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="5" class="pill">No credit payment requests yet.</td></tr>';
 
   return layout('AgentPay · Credit top-up control', `
     <section class="card product-panel">
       <div style="max-width:790px">
         <div class="eyebrow">AgentPay · Credit spend controls</div>
-        <h1>Approve agent credit spend before settlement.</h1>
-        <p>Common AI agent spend surfaces include OpenRouter inference credits, Firecrawl web-data credits, Browserbase browser hours, and other usage credits. AgentPay sits between the agent and the money.</p>
+        <h1>Create a controlled credit payment.</h1>
+        <p>AI agents can request usage credits from known providers. AgentPay fixes the amount in server code, verifies the request, and keeps settlement behind review controls.</p>
       </div>
     </section>
 
@@ -712,14 +712,14 @@ export const renderCreditTopupDemo = ({ account }) => {
     </div>
 
     <div class="card">
-      <h2>Spend surfaces agents already hit</h2>
+      <h2>Credit providers</h2>
       <div class="pipe">${providerCards}</div>
     </div>
 
     <div class="live-shell">
       <div class="card">
-        <h2>Create a credit top-up intent</h2>
-        <p class="pill" style="margin-top:0">Amounts and merchants are deterministic fixtures in server code. The agent chooses a scenario; AgentPay controls the spend.</p>
+        <h2>Create a controlled payment</h2>
+        <p class="pill" style="margin-top:0">Amounts and merchants are deterministic fixtures in server code. The agent chooses a provider; AgentPay controls the spend.</p>
         <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px">
           <button type="button" data-scenario="openrouter">OpenRouter credits</button>
           <button type="button" data-scenario="firecrawl">Firecrawl credits</button>
@@ -738,11 +738,11 @@ export const renderCreditTopupDemo = ({ account }) => {
         </div>
         <div class="stat" style="margin-bottom:12px">
           <div class="n" id="credit-status">Idle</div>
-          <div class="l">Intent status</div>
+          <div class="l">Review status</div>
         </div>
-        <p class="pill" id="credit-summary" style="margin:0">No card or PSP key is exposed to the agent.</p>
+        <p class="pill" id="credit-summary" style="margin:0">No card or payment provider key is exposed to the agent.</p>
         <div class="row" style="margin-top:14px">
-          <a href="/m"><button class="ghost">Open wallet</button></a>
+          <a href="/m"><button class="ghost">Review in wallet</button></a>
           <a href="/audit"><button class="ghost">Audit trail</button></a>
         </div>
       </div>
@@ -784,6 +784,7 @@ export const renderCreditTopupDemo = ({ account }) => {
         var recent=document.getElementById('credit-recent');
         function esc(value){var d=document.createElement('div');d.textContent=value == null ? '' : String(value);return d.innerHTML;}
         function money(value){var n=Number(value);if(!Number.isFinite(n))return '—';return n.toFixed(2).replace('.',',')+' EUR';}
+        function statusLabel(value){return value === 'pending_reversible' ? 'Pending review' : String(value || '—');}
         function line(event,detail){
           var d=document.createElement('div');
           d.className='cl';
@@ -793,7 +794,7 @@ export const renderCreditTopupDemo = ({ account }) => {
         }
         function addRecent(intent){
           var row=document.createElement('tr');
-          row.innerHTML='<td><span class="mono pill">'+esc(intent.intentId)+'</span></td><td>'+esc(intent.merchant)+'<div class="pill">'+esc(intent.claim)+'</div></td><td><b>'+esc(money(Number(intent.amount)))+'</b></td><td><span class="badge" style="background:#e0e7ff;color:#3730a3">'+esc(intent.status)+'</span></td><td><span class="mono pill">'+esc(intent.molliePaymentId || 'null until commit')+'</span></td>';
+          row.innerHTML='<td><span class="mono pill">'+esc(intent.intentId)+'</span></td><td>'+esc(intent.merchant)+'<div class="pill">'+esc(intent.claim)+'</div></td><td><b>'+esc(money(Number(intent.amount)))+'</b></td><td><span class="badge" style="background:#dbeafe;color:#1e40af">'+esc(statusLabel(intent.status))+'</span></td><td><span class="mono pill">'+esc(intent.molliePaymentId || 'null until commit')+'</span></td>';
           if(recent.querySelector('.pill')) recent.innerHTML='';
           recent.prepend(row);
         }
@@ -802,7 +803,7 @@ export const renderCreditTopupDemo = ({ account }) => {
             var scenario=btn.getAttribute('data-scenario');
             btn.disabled=true;
             out.innerHTML='';
-            line('agent.request','credit top-up scenario: '+scenario);
+            line('agent.request','credit provider: '+scenario);
             fetch('/demo/credit-topup',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({scenario:scenario})})
               .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
               .then(function(data){
@@ -810,9 +811,9 @@ export const renderCreditTopupDemo = ({ account }) => {
                 line('verifier',data.verifier ? (data.verifier.allow ? 'allow' : 'block')+' · '+data.verifier.reason : 'verifier returned');
                 line('intent.created',data.intentId+' · molliePaymentId='+(data.molliePaymentId || 'null'));
                 amount.textContent=money(Number(data.amount));
-                status.textContent=data.status;
+                status.textContent=statusLabel(data.status);
                 status.style.color=data.status === 'pending_reversible' ? 'var(--brand)' : 'var(--ink)';
-                summary.textContent='Intent prepared for '+data.merchant+'. Open the wallet to undo or confirm. Money has not moved.';
+                summary.textContent='Payment request prepared for '+data.merchant+'. Open the wallet to review, undo, or commit. Money has not moved.';
                 addRecent(data);
               })
               .catch(function(err){
@@ -978,15 +979,15 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
       <div id="toast" class="toast"></div>
 
       <div class="trust-rail">
-        <div class="trust-dot"><div class="n">Intent</div><div class="l">prepared</div></div>
-        <div class="trust-dot"><div class="n">Undo</div><div class="l">available</div></div>
+        <div class="trust-dot"><div class="n">Request</div><div class="l">prepared</div></div>
+        <div class="trust-dot"><div class="n">Review</div><div class="l">available</div></div>
         <div class="trust-dot"><div class="n">Commit</div><div class="l">controlled</div></div>
       </div>
 
       <div id="notifs"></div>
       <div id="empty" class="empty-state">
         <h2 style="margin-bottom:6px">No pending intents</h2>
-        <p class="pill" style="margin:0">Create a test intent to start the wallet flow.</p>
+        <p class="pill" style="margin:0">Prepare a test payment to start the wallet flow.</p>
       </div>
     </section>
   </div>
@@ -1008,11 +1009,11 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
       window.demoIntent=function(scenario){
         var toast=document.getElementById('toast');
         toast.style.display='block';
-        toast.textContent=scenario === 'liar' ? 'Suspicious agent intent incoming...' : 'Clean agent intent incoming...';
+        toast.textContent=scenario === 'liar' ? 'Preparing suspicious payment request...' : 'Preparing payment request...';
         fetch('/demo/reversible-intent?scenario='+encodeURIComponent(scenario),{method:'POST'})
           .then(function(r){return r.json();})
           .then(function(data){
-            toast.textContent=data.error ? data.error : 'Intent '+data.intentId+' ready. Money has not moved.';
+            toast.textContent=data.error ? data.error : 'Payment request prepared. Money has not moved.';
             setTimeout(refreshOnce, 180);
           })
           .catch(function(err){toast.textContent='Demo error: '+err.message;});
