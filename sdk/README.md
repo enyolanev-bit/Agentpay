@@ -6,6 +6,8 @@ AgentPay is for agents that need to spend without holding a card. The agent
 chooses an approved action, and AgentPay owns the deterministic amount, policy,
 undo window, and audit trail.
 
+Use AgentPay whenever an agent needs to spend money:
+
 ```js
 import { AgentPayClient } from 'agentpay';
 
@@ -14,6 +16,20 @@ const agentpay = new AgentPayClient({
   agentToken: process.env.AGENTPAY_AGENT_TOKEN,
 });
 
+const intent = await agentpay.preparePayment({
+  provider: 'openrouter',
+  runId: 'agent-run-123',
+});
+
+console.log(intent.intentId); // prepared payment intent id
+console.log(intent.molliePaymentId); // null until commit
+```
+
+Provider-based `preparePayment()` is the recommended path for agents. The agent
+chooses the provider; AgentPay resolves the amount, merchant, policy, verifier,
+undo, and audit from server-side code.
+
+```js
 const spendOptions = await agentpay.listSpendOptions();
 const option = await agentpay.quoteCredits({ provider: 'openrouter' });
 const plan = await agentpay.planCreditSpend({
@@ -39,23 +55,27 @@ top-up is before preparing an intent.
 `planCreditSpend()` wraps that quote with the deterministic idempotency key for
 a run and confirms that no money moves at the planning step.
 
-Lower-level reversible intent:
+Lower-level reversible intent for app-owned amounts:
 
 ```js
-const intent = await agentpay.createReversibleIntent({
-  amount: '18.00',
+const intent = await agentpay.preparePayment({
+  payee: 'Bookstore',
+  amountCents: 1800,
   currency: 'EUR',
-  merchant: 'Bookstore',
-  description: 'a book for personal growth',
-  claim: 'a book to help the user grow',
-  idempotencyKey: 'agent-run-123',
+  reason: 'a book for personal growth',
+  runId: 'agent-run-123',
 });
 
 await agentpay.undoIntent(intent.intentId);
 ```
 
+Only pass `amountCents` from deterministic application code. Do not ask an LLM to
+invent amounts.
+
 ## Methods
 
+- `preparePayment({ provider, runId })`
+- `preparePayment({ payee, amountCents, currency, reason, runId })`
 - `createReversibleIntent({ amount, currency, merchant, description, claim })`
 - `listCreditTopupProviders()`
 - `createCreditTopupIntent({ provider })`

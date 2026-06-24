@@ -46,6 +46,94 @@ test('createReversibleIntent calls API with bearer token and preserves null moll
   });
 });
 
+test('preparePayment with provider keeps amount server-owned', async () => {
+  const calls = [];
+  const client = new AgentPayClient({
+    baseUrl: 'http://agentpay.test',
+    agentToken: 'tok_demo',
+    fetch: async (url, init) => {
+      calls.push({ url: String(url), init });
+      return response({
+        type: 'CreditTopupIntent',
+        provider: 'openrouter',
+        amount: '25.00',
+        merchant: 'OpenRouter',
+        molliePaymentId: null,
+      });
+    },
+  });
+
+  const intent = await client.preparePayment({ provider: 'OpenRouter', runId: 'run-prepare-1' });
+
+  assert.equal(intent.type, 'CreditTopupIntent');
+  assert.equal(calls[0].url, 'http://agentpay.test/agent/credit-topup');
+  assert.equal(calls[0].init.headers.Authorization, 'Bearer tok_demo');
+  assert.equal(calls[0].init.headers['Idempotency-Key'], 'agentpay:run-prepare-1:credits:openrouter');
+  assert.deepEqual(JSON.parse(calls[0].init.body), { provider: 'OpenRouter' });
+});
+
+test('preparePayment maps app-owned cents to a reversible intent', async () => {
+  const calls = [];
+  const client = new AgentPayClient({
+    baseUrl: 'http://agentpay.test',
+    agentToken: 'tok_demo',
+    fetch: async (url, init) => {
+      calls.push({ url: String(url), init });
+      return response({
+        type: 'ReversiblePaymentIntent',
+        intentId: 'pay-2',
+        status: 'pending_reversible',
+        molliePaymentId: null,
+      });
+    },
+  });
+
+  const intent = await client.preparePayment({
+    payee: 'OpenRouter',
+    amountCents: 2500,
+    reason: 'Buy inference credits',
+    runId: 'run-prepare-2',
+  });
+
+  assert.equal(intent.type, 'ReversiblePaymentIntent');
+  assert.equal(intent.molliePaymentId, null);
+  assert.equal(calls[0].url, 'http://agentpay.test/agent/pay-reversible');
+  assert.equal(calls[0].init.headers['Idempotency-Key'], 'agentpay:run-prepare-2:payment:openrouter');
+  assert.deepEqual(JSON.parse(calls[0].init.body), {
+    amount: '25.00',
+    currency: 'EUR',
+    merchant: 'OpenRouter',
+    description: 'Buy inference credits',
+    claim: 'Buy inference credits',
+  });
+});
+
+test('preparePayment rejects agent-provided amount for deterministic providers', async () => {
+  const client = new AgentPayClient({ fetch: async () => response({}) });
+
+  await assert.rejects(
+    () => client.preparePayment({ provider: 'openrouter', amountCents: 2500 }),
+    (err) => {
+      assert.ok(err instanceof AgentPayError);
+      assert.equal(err.message, 'amountCents is not accepted when provider is used; AgentPay resolves provider prices server-side.');
+      return true;
+    },
+  );
+});
+
+test('preparePayment requires positive integer cents for generic intents', async () => {
+  const client = new AgentPayClient({ fetch: async () => response({}) });
+
+  await assert.rejects(
+    () => client.preparePayment({ payee: 'OpenRouter', amountCents: 25.5, reason: 'credits' }),
+    (err) => {
+      assert.ok(err instanceof AgentPayError);
+      assert.equal(err.message, 'amountCents must be a positive safe integer.');
+      return true;
+    },
+  );
+});
+
 test('undoIntent posts to undo endpoint without agent token requirement', async () => {
   const calls = [];
   const client = new AgentPayClient({

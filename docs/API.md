@@ -23,6 +23,10 @@ Idempotency-Key: <OPTIONAL_RETRY_KEY>
 
 JavaScript SDK: [`../sdk/README.md`](../sdk/README.md).
 
+Agent runtimes should usually call `agentpay.preparePayment(...)` in the SDK or
+`agentpay.prepare_payment` over MCP. Those helpers route to the HTTP endpoints
+below while preserving the same backend policy, verifier, undo, and audit path.
+
 ## Create a Reversible Payment Intent
 
 ```http
@@ -128,6 +132,15 @@ Agents can request a credit top-up by provider slug. The
 agent does not send amount, merchant, or claim. AgentPay resolves those from a
 deterministic server catalog before policy, verifier, undo, and audit run.
 
+SDK:
+
+```js
+await agentpay.preparePayment({
+  provider: 'openrouter',
+  runId: 'agent-run-123',
+});
+```
+
 ```http
 GET /agent/credit-topups
 ```
@@ -210,6 +223,7 @@ The MCP server should be a thin wrapper over the HTTP API:
 
 | MCP tool | HTTP operation |
 |---|---|
+| `agentpay.prepare_payment` | `POST /agent/credit-topup` when `provider` is set, otherwise `POST /agent/pay-reversible` |
 | `agentpay.create_reversible_intent` | `POST /agent/pay-reversible` |
 | `agentpay.list_pending_intents` | `GET /api/reversible-intents` |
 | `agentpay.undo_intent` | `POST /pay/:id/undo` |
