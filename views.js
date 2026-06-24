@@ -3,7 +3,7 @@
 
 import {
   escapeHtml, formatMoney, agentsForAccount, paymentsForAgent,
-  paymentsForAccount, todaySpentCents, getAgent,
+  paymentsForAccount, todaySpentCents, getAgent, policyProfileLabel, policyTemplateIds,
 } from './store.js';
 import { creditTopupProviders } from './credit-scenarios.js';
 
@@ -94,6 +94,18 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
   .provider-card .top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
   .price{font-size:24px;font-weight:800;letter-spacing:0;color:var(--ink)}
   .earnings{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
+  .budget-panel{border:1px solid #c7d2fe;background:#fbfdff;border-radius:8px;padding:14px;margin:12px 0}
+  .budget-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+  .budget-profile{font-size:12px;text-transform:uppercase;letter-spacing:0;color:var(--brand);font-weight:800;margin-bottom:2px}
+  .budget-title{font-size:16px;font-weight:800;color:var(--ink)}
+  .budget-usage{text-align:right;min-width:150px}
+  .budget-usage b{display:block;font-size:18px;color:var(--ink)}
+  .budget-meter{height:7px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:8px}
+  .budget-meter span{display:block;height:100%;background:var(--brand);border-radius:999px}
+  .rule-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .rule-box{border:1px solid var(--line);background:#fff;border-radius:8px;padding:10px;min-width:0}
+  .rule-box b{display:block;font-size:13px;color:var(--ink)}
+  .rule-box span{display:block;font-size:12px;color:#475569;margin-top:3px}
   .live-shell{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:16px;align-items:start}
   .protocol-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.72fr);gap:16px;align-items:start}
   .object-card{background:#fff;border:1px solid #c7d2fe;border-top:3px solid var(--brand);border-radius:8px;padding:18px;margin-bottom:16px}
@@ -133,6 +145,9 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
     .live-shell,.protocol-shell{grid-template-columns:1fr}
     .object-meta{grid-template-columns:1fr}
     .status-rail{grid-template-columns:1fr}
+    .budget-head{display:block}
+    .budget-usage{text-align:left;margin-top:10px}
+    .rule-grid{grid-template-columns:1fr}
     .rail-step{min-height:auto}
     .event-line{grid-template-columns:1fr;gap:2px}
     .card,.object-card,.object-box,.stat{min-width:0}
@@ -283,11 +298,22 @@ export const renderSetup = () => layout('AgentPay · Setup', `
 
 // --- Agent card -----------------------------------------------------------
 
+const percentUsed = (used, limit) => {
+  if (!Number.isFinite(limit) || limit <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((used / limit) * 100)));
+};
+
 const agentCard = (agent, baseUrl) => {
   const p = agent.policy;
   const spent = todaySpentCents(agent.id);
   const isProvider = agent.role === 'provider';
   const payments = paymentsForAgent(agent.id).slice(-5).reverse();
+  const profileLabel = policyProfileLabel(agent.policyProfile);
+  const allowedMerchants = Array.isArray(p.allowedMerchants) ? p.allowedMerchants : [];
+  const budgetPct = percentUsed(spent, p.maxPerDayCents);
+  const merchantsRule = allowedMerchants.length
+    ? `Allowed merchants: ${allowedMerchants.join(', ')}`
+    : 'Any merchant allowed by policy';
 
   const rows = payments.map((pay) => `
     <tr>
@@ -306,6 +332,26 @@ const agentCard = (agent, baseUrl) => {
     ${agent.ledger.length ? `<table style="margin-bottom:10px"><thead><tr><th>From</th><th>Amount</th><th>Payment</th></tr></thead><tbody>${
       agent.ledger.slice(-5).reverse().map((l) => `<tr><td>${escapeHtml(getAgent(l.fromAgentId)?.handle ?? l.fromAgentId)}</td><td>${formatMoney(l.amountCents)}</td><td><span class="mono pill">${escapeHtml(l.paymentId)}</span></td></tr>`).join('')
     }</tbody></table>` : ''}` : '';
+
+  const budgetPanel = `<div class="budget-panel">
+    <div class="budget-head">
+      <div>
+        <div class="budget-profile">Agent budget profile</div>
+        <div class="budget-title">${escapeHtml(profileLabel)}</div>
+        <div class="pill" style="margin-top:4px">${escapeHtml(merchantsRule)}</div>
+      </div>
+      <div class="budget-usage">
+        <b>${formatMoney(spent)} / ${formatMoney(p.maxPerDayCents)}</b>
+        <span class="pill">Daily budget used · ${budgetPct}%</span>
+        <div class="budget-meter" aria-hidden="true"><span style="width:${budgetPct}%"></span></div>
+      </div>
+    </div>
+    <div class="rule-grid">
+      <div class="rule-box"><b>Auto approve</b><span>Up to ${formatMoney(p.approvalThresholdCents)} when policy allows.</span></div>
+      <div class="rule-box"><b>Human review</b><span>Above ${formatMoney(p.approvalThresholdCents)} and within ${formatMoney(p.maxPerTxCents)} per transaction.</span></div>
+      <div class="rule-box"><b>Blocked</b><span>Over ${formatMoney(p.maxPerTxCents)} per transaction, over daily budget, or outside allowed merchants.</span></div>
+    </div>
+  </div>`;
 
   const callExample = isProvider
     ? `<pre># Another agent pays this provider (A2A):
@@ -331,11 +377,13 @@ curl -X POST ${escapeHtml(baseUrl)}/agent/pay-agent \\
         <b style="font-size:16px">${escapeHtml(agent.name)}</b>
         <span class="role ${isProvider ? 'provider' : 'payer'}">${isProvider ? 'provider' : 'payer'}</span>
         <span class="chip mono">${escapeHtml(agent.handle)}</span>
+        <span class="chip">Profile: ${escapeHtml(profileLabel)}</span>
       </div>
       <span class="pill">Today: <b>${formatMoney(spent)}</b> / ${formatMoney(p.maxPerDayCents)}</span>
     </div>
     <p class="pill" style="margin:8px 0">Token : <span class="chipcode">${escapeHtml(agent.token)}</span>${isProvider && agent.service ? ` &nbsp;·&nbsp; Service : <b>${escapeHtml(agent.service.label)}</b> (${formatMoney(agent.service.priceCents)})` : ''}</p>
     ${earningsBlock}
+    ${budgetPanel}
     <form method="POST" action="/agents/${agent.id}/policy" class="row" style="margin:6px 0 4px">
       <div><label>Max / transaction (€)</label><input name="maxPerTx" value="${(p.maxPerTxCents/100).toFixed(2)}"></div>
       <div><label>Max / day (€)</label><input name="maxPerDay" value="${(p.maxPerDayCents/100).toFixed(2)}"></div>
@@ -395,11 +443,15 @@ export const renderDashboard = ({ account, pending, baseUrl }) => {
       : '<p class="pill" style="margin:0">Nothing to approve. Payments above the threshold land here.</p>'}
   </div>`;
 
+  const policyProfileOptions = policyTemplateIds().map((id) =>
+    `<option value="${escapeHtml(id)}"${id === 'developer_agent' ? ' selected' : ''}>${escapeHtml(policyProfileLabel(id))}</option>`).join('');
+
   const addAgentCard = `<div class="card">
     <h2>Connect an agent</h2>
     <form method="POST" action="/agents" class="row">
       <div><label>Agent name</label><input name="name" placeholder="Ops payment agent" required></div>
       <div><label>Role</label><select name="role"><option value="payer">payer (initiates payments)</option><option value="provider">provider (sells a paid service)</option></select></div>
+      <div><label>Budget profile</label><select name="policyProfile">${policyProfileOptions}</select></div>
       <button type="submit">Create agent + token</button>
     </form>
   </div>`;

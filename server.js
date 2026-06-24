@@ -14,7 +14,7 @@ import {
   createAccount, getAccount, getAccountByCustomer, updatePayment,
   createAgent, getAgent, findAgentByToken, findAgentByHandleOrId, agentsForAccount, providersForAccount,
   toCents, addAudit, auditLog, getPaymentByMollieId, pendingHumanPayments, pendingReversiblePayments, getPayment,
-  loadStore,
+  loadStore, policyTemplateIds,
 } from './store.js';
 import { createCustomer, createFirstPayment, getValidMandate, getMolliePayment } from './mollie.js';
 import {
@@ -97,9 +97,11 @@ app.post('/agents', (req, res) => {
   if (!account) return res.redirect('/');
   const name = String(req.body.name ?? '').trim() || 'Agent';
   const role = req.body.role === 'provider' ? 'provider' : 'payer';
+  const requestedProfile = String(req.body.policyProfile ?? 'developer_agent');
+  const policyProfile = policyTemplateIds().includes(requestedProfile) ? requestedProfile : 'developer_agent';
   const service = role === 'provider' ? { label: `Service de ${name}`, priceCents: 250 } : null;
-  const agent = createAgent({ accountId: account.id, name, role, service });
-  addAudit({ agentId: agent.id, event: 'agent.created', detail: `${name} (${agent.handle}, ${role})` });
+  const agent = createAgent({ accountId: account.id, name, role, service, policyProfile });
+  addAudit({ agentId: agent.id, event: 'agent.created', detail: `${name} (${agent.handle}, ${role}, ${agent.policyProfile})` });
   res.redirect('/');
 });
 
@@ -114,6 +116,7 @@ app.post('/agents/:id/policy', (req, res) => {
   if (approvalThreshold) agent.policy.approvalThresholdCents = approvalThreshold;
   agent.policy.allowedMerchants = String(req.body.allowedMerchants ?? '')
     .split(',').map((s) => s.trim()).filter(Boolean);
+  agent.policyProfile = 'custom';
   addAudit({ agentId: agent.id, event: 'policy.updated', detail: `tx<=${maxPerTx} jour<=${maxPerDay} seuil=${approvalThreshold} marchands=[${agent.policy.allowedMerchants.join(',')}]` });
   res.redirect('/');
 });

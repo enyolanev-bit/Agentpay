@@ -21,12 +21,7 @@ export function seedDemo() {
     name: 'Codex Ops Agent',
     handle: '@codex-ops',
     role: 'payer',
-    policy: {
-      maxPerTxCents: 100000,        // 1000 EUR max par transaction
-      maxPerDayCents: 200000,       // 2000 EUR max par jour
-      approvalThresholdCents: 10000, // 10000 centimes -> validation humaine au-dela
-      allowedMerchants: [],          // tous marchands autorises (modifiable dans l'UI)
-    },
+    policyProfile: 'procurement_agent',
   });
 
   // Providers : marketplace d'agents payables -> cibles des paiements agent-to-agent.
@@ -36,7 +31,7 @@ export function seedDemo() {
     handle: '@data-provider',
     role: 'provider',
     service: { label: 'Data enrichment (per request)', priceCents: 250 }, // 2,50 EUR
-    policy: { maxPerTxCents: 100000, maxPerDayCents: 200000, approvalThresholdCents: 10000, allowedMerchants: [] },
+    policyProfile: 'support_agent',
   });
 
   const kycChecker = createAgent({
@@ -45,7 +40,7 @@ export function seedDemo() {
     handle: '@kyc-checker',
     role: 'provider',
     service: { label: 'KYC verification', priceCents: 500 }, // 5,00 EUR
-    policy: { maxPerTxCents: 100000, maxPerDayCents: 200000, approvalThresholdCents: 10000, allowedMerchants: [] },
+    policyProfile: 'support_agent',
   });
 
   const geocoder = createAgent({
@@ -54,7 +49,7 @@ export function seedDemo() {
     handle: '@geocoder',
     role: 'provider',
     service: { label: 'Address geocoding', priceCents: 100 }, // 1,00 EUR
-    policy: { maxPerTxCents: 100000, maxPerDayCents: 200000, approvalThresholdCents: 10000, allowedMerchants: [] },
+    policyProfile: 'support_agent',
   });
 
   addAudit({
