@@ -15,7 +15,7 @@ Ne jamais y ajouter :
 Avant chaque ajout ou modification : vérifier que le contenu est technique, générique, sans donnée perso, sans stratégie business, sans lien vers espace ou outil privé. En cas de doute, le contenu reste hors repo.
 
 ## Bloquants (non négociables)
-1. **Pas un repo git.** Si on build à plusieurs : `git init && git add -A && git commit -m snapshot` d'abord.
+1. **Repo public sous Git.** Travailler sur branche dédiée, passer par PR, et ne pas push directement sur `main`.
 2. **Le LLM ne calcule JAMAIS un montant.** Montants/plafonds/prix = code déterministe (`policy.js`, prix du provider). Le LLM décide quoi/qui, pas combien.
 3. **Argent en CENTIMES (entiers)** partout. `centsToMollie()` seulement pour parler à Mollie.
 4. **`codex exec` hang si stdin ouvert** → toujours `stdio:['ignore',...]` / `</dev/null`. Pattern : `--ephemeral --skip-git-repo-check -s read-only --output-schema <schema> -o <out>` + timeout + fallback.
@@ -37,7 +37,7 @@ Valider le réel : `DECIDER_MODE=codex VERIFIER_MODE=codex`.
 `server.js` routes/wiring · `store.js` état mémoire+argent · `policy.js` garde-fou 1 · `verifier.js` garde-fou 2 (Codex) · `flow.js` orchestration+A2A · `mollie.js` mandat+recurring · `tasks.js` agent live · `provider.js` livrable · `views.js` UI · `seed.js` démo.
 
 ## Branch & review policy
-- **`main` est protégée** : pas de push direct. Tout passe par **Pull Request** avec **CI verte** (`.github/workflows/ci.yml` → `npm test`).
+- **`main` est protégée** : pas de push direct. Tout passe par **Pull Request** avec **CI verte** (`.github/workflows/ci.yml` → `npm run audit:publish`, `node --check`, `npm test`).
 - **Une PR = un lot atomique**, branche dédiée (`feature/*`, `chore/*`, `fix/*`). Jamais `git add -A` à l'aveugle. `.env` hors git.
 - **Review avant merge** : relire les tests, les invariants, et les captures si l'UI change.
 - **GATES** : modifier `policy.js`/`verifier.js` (garde-fous) · utiliser une clé Mollie live / vrai argent · déployer · merger dans `main`.
