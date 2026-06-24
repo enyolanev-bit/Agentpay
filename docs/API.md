@@ -9,6 +9,11 @@ http://localhost:3000
 Local MVP state is persisted to `AGENTPAY_DATA_FILE` when configured.
 
 Agent endpoints use bearer tokens created in the dashboard.
+For the seeded local demo account, fetch one with:
+
+```bash
+curl http://localhost:3000/api/demo-token
+```
 
 ```http
 Authorization: Bearer <AGENT_TOKEN>
@@ -206,11 +211,11 @@ The MCP server should be a thin wrapper over the HTTP API:
 | MCP tool | HTTP operation |
 |---|---|
 | `agentpay.create_reversible_intent` | `POST /agent/pay-reversible` |
-| `agentpay.create_credit_topup_intent` | `POST /agent/credit-topup` |
 | `agentpay.list_pending_intents` | `GET /api/reversible-intents` |
 | `agentpay.undo_intent` | `POST /pay/:id/undo` |
 | `agentpay.confirm_intent` | `POST /pay/:id/confirm` |
 | `agentpay.pay_agent` | `POST /agent/pay-agent` |
+| `agentpay.get_payment` | `GET /api/payments/:id` |
 
 Keep the HTTP API as the source of truth. MCP should not duplicate payment logic.
 
