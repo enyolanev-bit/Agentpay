@@ -43,73 +43,77 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <title>${escapeHtml(title)}</title>
 <style>
-  :root{--ink:#0f1222;--ink2:#1c2036;--mut:#667085;--line:#e7e8ef;--brand:#4f46e5;--brand2:#7c83ff;--bg:#f5f6fb;--ok:#065f46;--bad:#991b1b;--warn:#92400e;
+  :root{--ink:#111827;--ink2:#1f2937;--mut:#64748b;--line:#e2e8f0;--brand:#1d4ed8;--brand2:#38bdf8;--bg:#f8fafc;--ok:#047857;--bad:#b91c1c;--warn:#b45309;
     --font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    --font-display:"Space Grotesk",var(--font-sans)}
+    --font-display:var(--font-sans)}
   *{box-sizing:border-box}
   body{font-family:var(--font-sans);margin:0;background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
   a{color:var(--brand);text-decoration:none}
-  header{background:#1b1542;color:#fff;padding:18px 28px;border-bottom:1px solid #2a2160}
-  .brand{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;font-family:var(--font-display);letter-spacing:-.01em}
+  header{background:#0f172a;color:#fff;padding:16px 28px;border-bottom:1px solid #1e293b}
+  .brand{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;font-family:var(--font-display);letter-spacing:0}
   h1,h2{font-family:var(--font-display)}
   .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--brand2)}
-  .brand small{font-weight:500;color:#aab0e0;font-size:13px;margin-left:6px}
+  .brand small{font-weight:500;color:#cbd5e1;font-size:13px;margin-left:6px}
   nav{margin-top:10px;font-size:14px}
-  nav a{color:#c7cbf2;margin-right:18px}
+  nav a{color:#cbd5e1;margin-right:18px}
   main{max-width:1080px;margin:0 auto;padding:26px 28px 60px}
-  h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em} h2{font-size:15px;margin:0 0 12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+  h1{font-size:24px;margin:0 0 4px;letter-spacing:0} h2{font-size:15px;margin:0 0 12px;text-transform:uppercase;letter-spacing:0;color:var(--mut)}
   .sub{color:var(--mut);font-size:15px;margin:0 0 22px;max-width:70ch}
-  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px;margin-bottom:16px}
   .card.alert{border-color:#f5c976;background:#fffdf6}
+  .product-panel{background:#fff;color:var(--ink);border-color:#cbd5e1;padding:24px}
+  .product-panel .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:0;color:#1d4ed8;font-weight:800;margin-bottom:8px}
+  .product-panel h1{font-size:30px;line-height:1.08;margin-bottom:10px}
+  .product-panel p{margin:0 0 18px;color:#475569;max-width:68ch}
   .grid{display:grid;gap:14px}
   .stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
-  .stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
-  .stat .n{font-size:22px;font-weight:700;letter-spacing:-.02em}
-  .stat .l{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+  .stat .n{font-size:22px;font-weight:700;letter-spacing:0}
+  .stat .l{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:0;margin-top:2px}
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:top}
   th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
   tr:last-child td{border-bottom:0}
   code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-  .chipcode{background:#0e1330;color:#cdd6ff;padding:3px 8px;border-radius:6px;font-size:12.5px;font-family:ui-monospace,Menlo,monospace;display:inline-block}
+  .chipcode{background:#111827;color:#d1d5db;padding:3px 8px;border-radius:6px;font-size:12.5px;font-family:ui-monospace,Menlo,monospace;display:inline-block}
   .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600}
   .chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;background:#eef0f4;color:#475467}
   .chip.ok{background:#d1fae5;color:var(--ok)} .chip.bad{background:#fee2e2;color:var(--bad)}
-  .role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:6px}
-  .role.payer{background:#e0e7ff;color:#3730a3} .role.provider{background:#dcfce7;color:#166534}
+  .role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0;padding:3px 9px;border-radius:6px}
+  .role.payer{background:#dbeafe;color:#1e40af} .role.provider{background:#dcfce7;color:#166534}
   button{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:9px 15px;font-size:14px;font-weight:600;cursor:pointer}
-  button:hover{background:#4338ca} button.ghost{background:#fff;color:var(--brand);border:1px solid #c7cbf2} button.danger{background:#dc2626}
-  input,select,textarea{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fff}
+  button:hover{background:#1e40af} button.ghost{background:#fff;color:var(--brand);border:1px solid #bfdbfe} button.danger{background:#dc2626}
+  input,select,textarea{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
   label{display:block;font-size:12px;color:var(--mut);margin:0 0 4px;font-weight:600}
   .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
   .muted{color:var(--mut)} .pill{font-size:13px;color:var(--mut)}
-  pre{background:#0e1330;color:#cdd6ff;padding:14px;border-radius:10px;overflow:auto;font-size:12.5px;margin:8px 0 0}
+  pre{background:#111827;color:#d1d5db;padding:14px;border-radius:8px;overflow:auto;font-size:12.5px;margin:8px 0 0}
   details summary{cursor:pointer;color:var(--brand);font-size:13px;font-weight:600}
   .market-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
-  .provider-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;min-height:190px;display:flex;flex-direction:column;justify-content:space-between}
+  .provider-card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;min-height:190px;display:flex;flex-direction:column;justify-content:space-between}
   .provider-card .top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-  .price{font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+  .price{font-size:24px;font-weight:800;letter-spacing:0;color:var(--ink)}
   .earnings{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
   .live-shell{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:16px;align-items:start}
   .lamp{padding:8px 12px;border-radius:999px;font-size:13px;font-weight:700;background:#eef0f4;color:#667085;border:1px solid var(--line);position:relative;overflow:hidden}
   .lamp.run{background:#fef3c7;color:#92400e;border-color:#f5c976;animation:pulse 1s infinite}
   .lamp.ok{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
   .lamp.bad{background:#fee2e2;color:#991b1b;border-color:#fecaca}
-  .cl{padding:4px 0;white-space:pre-wrap;border-bottom:1px solid rgba(205,214,255,.08)}
+  .cl{padding:4px 0;white-space:pre-wrap;border-bottom:1px solid rgba(209,213,219,.12)}
   .cl:last-child{border-bottom:0}
   .deliverable-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.62}}
   /* pipeline des garde-fous */
   .pipe{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
-  .step{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;position:relative}
-  .step .k{font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.05em}
+  .step{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;position:relative}
+  .step .k{font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:0}
   .step .t{font-weight:700;margin:2px 0 3px} .step .d{font-size:12.5px;color:var(--mut)}
   .arrow{display:flex;align-items:center;color:#c7cbf2;font-size:20px;padding:0 8px}
   @media(max-width:760px){.arrow{display:none}.live-shell{grid-template-columns:1fr}}
 </style></head><body>
 <header>
   <div class="brand"><span class="dot"></span>AgentPay <small>· credit/spend control for AI agents</small></div>
-  <nav><a href="/">Dashboard</a><a href="/credits">Credit top-up</a><a href="/earn">Earn demo</a><a href="/market">Marketplace</a><a href="/task">Agent live</a><a href="/audit">Audit trail</a></nav>
+  <nav><a href="/">Dashboard</a><a href="/credits">Credit top-up</a><a href="/earn">Provider earnings</a><a href="/market">Marketplace</a><a href="/task">Live flow</a><a href="/audit">Audit trail</a></nav>
 </header>
 <main>${body}</main></body></html>`;
 
@@ -117,9 +121,9 @@ const pipeline = () => `
   <div class="pipe">
     <div class="step"><div class="k">Guardrail 1</div><div class="t">Deterministic policy</div><div class="d">Limits, thresholds, allowlists. The LLM never calculates money.</div></div>
     <div class="arrow">→</div>
-    <div class="step"><div class="k">Guardrail 2</div><div class="t">Adversarial Codex</div><div class="d">A second model inspects every payment and can block it.</div></div>
+    <div class="step"><div class="k">Guardrail 2</div><div class="t">Independent verifier</div><div class="d">A second check inspects every payment and can block it.</div></div>
     <div class="arrow">→</div>
-    <div class="step"><div class="k">Guardrail 3</div><div class="t">Human liability sink</div><div class="d">Human approval above threshold. Every decision is audited.</div></div>
+    <div class="step"><div class="k">Guardrail 3</div><div class="t">Human approval</div><div class="d">Human approval above threshold. Every decision is audited.</div></div>
     <div class="arrow">→</div>
     <div class="step"><div class="k">Execution</div><div class="t">Mollie</div><div class="d">Charges the mandate without checkout. Money moves only after approval.</div></div>
   </div>`;
@@ -128,15 +132,15 @@ const pipeline = () => `
 
 export const renderMarket = () => layout('AgentPay · Marketplace', `
   <h1>Agent marketplace</h1>
-  <p class="sub">Providers publish a handle, a service, and a price. A payer agent can call them through A2A on the same rails: deterministic policy, Codex verification, human approval when needed, then settlement.</p>
+  <p class="sub">Providers publish a handle, a service, and a price. A payer agent can call them through A2A on the same rails: deterministic policy, independent verification, human approval when needed, then settlement.</p>
 
-  <div class="card" style="background:#1b1542;color:#fff;border-color:#2a2160">
+  <div class="card" style="background:#0f172a;color:#fff;border-color:#1e293b">
     <div class="row" style="justify-content:space-between;align-items:center">
       <div>
         <h2 style="color:#c7cbf2">Agent economy</h2>
         <p style="margin:0;max-width:62ch">Each card is an addressable counterparty. The price comes from the provider, money stays in integer cents, and the provider accrues A2A earnings.</p>
       </div>
-      <a href="/"><button style="background:#fff;color:#3730a3">Dashboard</button></a>
+      <a href="/"><button style="background:#fff;color:#1e40af">Dashboard</button></a>
     </div>
   </div>
 
@@ -308,7 +312,7 @@ curl -X POST ${escapeHtml(baseUrl)}/agent/pay-agent \\
       <div><label>Allowed merchants (blank = all)</label><input name="allowedMerchants" value="${escapeHtml(p.allowedMerchants.join(', '))}" placeholder="OpenAI API, AWS"></div>
       <button class="ghost" type="submit">Update</button>
     </form>
-    <table><thead><tr><th>ID</th><th>Counterparty</th><th>Amount</th><th>Status</th><th>Codex verdict</th></tr></thead><tbody>${rows}</tbody></table>
+    <table><thead><tr><th>ID</th><th>Counterparty</th><th>Amount</th><th>Status</th><th>Verifier verdict</th></tr></thead><tbody>${rows}</tbody></table>
     <details style="margin-top:10px"><summary>API example</summary>${callExample}</details>
   </div>`;
 };
@@ -363,28 +367,28 @@ export const renderDashboard = ({ account, pending, baseUrl }) => {
   const addAgentCard = `<div class="card">
     <h2>Connect an agent</h2>
     <form method="POST" action="/agents" class="row">
-      <div><label>Agent name</label><input name="name" placeholder="Codex Ops Agent" required></div>
+      <div><label>Agent name</label><input name="name" placeholder="Ops payment agent" required></div>
       <div><label>Role</label><select name="role"><option value="payer">payer (initiates payments)</option><option value="provider">provider (sells a paid service)</option></select></div>
       <button type="submit">Create agent + token</button>
     </form>
   </div>`;
 
-  const productHero = `<div class="card" style="background:#10131f;color:#fff;border-color:#24283a;padding:26px 24px;overflow:hidden;position:relative">
-    <div style="max-width:720px;position:relative;z-index:1">
-      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#aab0ff;font-weight:800;margin-bottom:8px">AgentPay · Credit/spend control for AI agents</div>
-      <h1 style="font-size:34px;line-height:1.02;margin-bottom:10px">Let agents buy credits. Not your card.</h1>
-      <p style="margin:0 0 18px;color:#d8dcff;max-width:62ch">Agents can request API credits, web-data credits, browser hours, or SaaS actions. AgentPay turns every spend into a <b>ReversiblePaymentIntent</b>: budgeted, approved, undoable, and audited before money moves.</p>
+  const productHero = `<div class="card product-panel">
+    <div style="max-width:720px">
+      <div class="eyebrow">AgentPay · Trust layer for AI agent spend</div>
+      <h1>Payment controls for autonomous agent spend.</h1>
+      <p>AI agents can request API credits, web-data credits, browser hours, or SaaS actions. AgentPay turns every spend into a <b>ReversiblePaymentIntent</b>: budgeted, verified, approval-ready, and audited before money moves.</p>
       <div class="row">
-        <a href="/credits"><button style="background:#9ee7c4;color:#10131f">Run credit top-up</button></a>
-        <a href="/m"><button style="background:#fff;color:#10131f">Open mobile wallet</button></a>
-        <a href="/audit"><button style="background:#24283a;color:#fff">View audit</button></a>
+        <a href="/credits"><button>Create credit intent</button></a>
+        <a href="/m"><button class="ghost">Open wallet controls</button></a>
+        <a href="/audit"><button class="ghost">View audit</button></a>
       </div>
     </div>
   </div>`;
 
   const consumerFlow = `<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:16px">
     <div class="card" style="margin:0"><h2>1 · Agent prepares</h2><p class="pill" style="margin:0">It requests payment for a service, an invoice, or another agent.</p></div>
-    <div class="card" style="margin:0"><h2>2 · AgentPay verifies</h2><p class="pill" style="margin:0">Deterministic policy plus adversarial verifier catch limits, injection, and false claims.</p></div>
+    <div class="card" style="margin:0"><h2>2 · AgentPay verifies</h2><p class="pill" style="margin:0">Deterministic policy and independent verification check limits, injection, and false claims.</p></div>
     <div class="card" style="margin:0"><h2>3 · You keep undo</h2><p class="pill" style="margin:0">On mobile, cancel, confirm, or let the window expire.</p></div>
   </div>`;
 
@@ -395,7 +399,7 @@ export const renderDashboard = ({ account, pending, baseUrl }) => {
       <td><b>${formatMoney(pay.amountCents, pay.currency)}</b></td>
       <td>${verdictChip(pay.verifierVerdict)}</td>
       <td class="pill">${pay.reversibleUntilMs ? escapeHtml(new Date(pay.reversibleUntilMs).toLocaleTimeString('en-US')) : '—'}</td>
-    </tr>`).join('') || '<tr><td colspan="5" class="pill">No pending intents. Use /m to create a demo scene.</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="5" class="pill">No pending intents. Open wallet controls to create a test intent.</td></tr>';
 
   const reversibleCard = `<div class="card">
     <div class="row" style="justify-content:space-between;align-items:center">
@@ -428,8 +432,8 @@ export const renderDashboard = ({ account, pending, baseUrl }) => {
 // --- Live agent: SSE page -------------------------------------------------
 
 export const renderTaskLive = (defaultTask = 'Enrich a list of companies (firmographic data, score, segment).') => layout('AgentPay · Live agent', `
-  <h1>Live Codex agent</h1>
-  <p class="sub">The agent receives a task and decides live whether it needs to pay another agent to finish it. Codex makes the decision; the provider price comes from deterministic code, not the LLM.</p>
+  <h1>Live agent payment flow</h1>
+  <p class="sub">The agent receives a task and decides live whether it needs to pay another agent to finish it. The provider price comes from deterministic code, not the LLM.</p>
 
   <div class="card">
     <form id="taskform">
@@ -448,7 +452,7 @@ export const renderTaskLive = (defaultTask = 'Enrich a list of companies (firmog
   <div class="live-shell">
     <div class="card">
       <h2>Console live</h2>
-      <div id="console" style="background:#0e1330;color:#cdd6ff;border-radius:10px;padding:14px;font-family:ui-monospace,Menlo,monospace;font-size:13px;min-height:220px;max-height:430px;overflow:auto">
+        <div id="console" style="background:#111827;color:#d1d5db;border-radius:8px;padding:14px;font-family:ui-monospace,Menlo,monospace;font-size:13px;min-height:220px;max-height:430px;overflow:auto">
         <div class="cl muted">Waiting.</div>
       </div>
     </div>
@@ -456,9 +460,9 @@ export const renderTaskLive = (defaultTask = 'Enrich a list of companies (firmog
     <div class="card">
       <h2>Guardrails</h2>
       <div id="lamps" style="display:flex;gap:10px;flex-wrap:wrap">
-        <span class="lamp" data-k="decision">Codex decision</span>
+        <span class="lamp" data-k="decision">Agent decision</span>
         <span class="lamp" data-k="policy">Policy</span>
-        <span class="lamp" data-k="verifier">Codex verifier</span>
+        <span class="lamp" data-k="verifier">Verifier</span>
         <span class="lamp" data-k="settlement">A2A settlement</span>
       </div>
       <div style="height:14px"></div>
@@ -548,11 +552,11 @@ export const renderEarnDemo = ({ account }) => {
     </tr>`).join('') || '<tr><td colspan="4" class="pill">No providers yet.</td></tr>';
 
   return layout('AgentPay · Earn demo', `
-    <section class="card" style="background:#10131f;color:#fff;border-color:#24283a;padding:26px 24px">
+    <section class="card" style="background:#0f172a;color:#fff;border-color:#1e293b;padding:24px">
       <div style="max-width:780px">
-        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#9ee7c4;font-weight:800;margin-bottom:8px">AgentPay · agent earns safely</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0;color:#bfdbfe;font-weight:800;margin-bottom:8px">AgentPay · agent earns safely</div>
         <h1 style="font-size:34px;line-height:1.02;margin-bottom:10px">An agent can generate revenue. It still cannot control the money.</h1>
-        <p style="margin:0;color:#d8dcff;max-width:66ch">This demo runs a mini economy: a payer agent delegates paid work to provider agents. Every payment still goes through deterministic policy, adversarial verification, settlement, and audit.</p>
+        <p style="margin:0;color:#cbd5e1;max-width:66ch">This product flow runs a mini economy: a payer agent delegates paid work to provider agents. Every payment still goes through deterministic policy, independent verification, settlement, and audit.</p>
       </div>
     </section>
 
@@ -572,7 +576,7 @@ export const renderEarnDemo = ({ account }) => {
           </div>
           <button id="earn-run" type="button">Run earning demo</button>
         </div>
-        <div id="earn-console" style="background:#0e1330;color:#cdd6ff;border-radius:10px;padding:14px;font-family:ui-monospace,Menlo,monospace;font-size:13px;min-height:250px;max-height:430px;overflow:auto;margin-top:14px">
+        <div id="earn-console" style="background:#111827;color:#d1d5db;border-radius:8px;padding:14px;font-family:ui-monospace,Menlo,monospace;font-size:13px;min-height:250px;max-height:430px;overflow:auto;margin-top:14px">
           <div class="cl muted">Ready.</div>
         </div>
       </div>
@@ -689,14 +693,14 @@ export const renderCreditTopupDemo = ({ account }) => {
       <td><b>${formatMoney(pay.amountCents, pay.currency)}</b></td>
       <td>${badge(pay.status)}</td>
       <td>${pay.molliePaymentId ? `<span class="mono pill">${escapeHtml(pay.molliePaymentId)}</span>` : '<span class="mono pill">null until commit</span>'}</td>
-    </tr>`).join('') || '<tr><td colspan="5" class="pill">No credit intents yet. Run a scenario.</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="5" class="pill">No credit payment requests yet.</td></tr>';
 
   return layout('AgentPay · Credit top-up control', `
-    <section class="card" style="background:#10131f;color:#fff;border-color:#24283a;padding:26px 24px">
+    <section class="card product-panel">
       <div style="max-width:790px">
-        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#9ee7c4;font-weight:800;margin-bottom:8px">AgentPay · credit/spend control</div>
-        <h1 style="font-size:34px;line-height:1.02;margin-bottom:10px">An agent needs more credits. Who approves the spend?</h1>
-        <p style="margin:0;color:#d8dcff;max-width:68ch">Common agent spend surfaces include OpenRouter inference credits, Firecrawl web-data credits, Browserbase browser hours, or other usage credits. AgentPay sits between the agent and the money.</p>
+        <div class="eyebrow">AgentPay · Credit spend controls</div>
+        <h1>Create a controlled credit payment.</h1>
+        <p>AI agents can request usage credits from known providers. AgentPay fixes the amount in server code, verifies the request, and keeps settlement behind review controls.</p>
       </div>
     </section>
 
@@ -704,24 +708,24 @@ export const renderCreditTopupDemo = ({ account }) => {
       <div class="stat"><div class="n">Credits</div><div class="l">Spend type</div></div>
       <div class="stat"><div class="n">Undo</div><div class="l">Before commit</div></div>
       <div class="stat"><div class="n">Audit</div><div class="l">Every decision</div></div>
-      <div class="stat"><div class="n">0</div><div class="l">Live money in demo</div></div>
+      <div class="stat"><div class="n">Simulated</div><div class="l">Settlement mode</div></div>
     </div>
 
     <div class="card">
-      <h2>Spend surfaces agents already hit</h2>
+      <h2>Credit providers</h2>
       <div class="pipe">${providerCards}</div>
     </div>
 
     <div class="live-shell">
       <div class="card">
-        <h2>Run a credit top-up intent</h2>
-        <p class="pill" style="margin-top:0">Amounts and merchants are deterministic fixtures in server code. The agent chooses a scenario; AgentPay controls the spend.</p>
+        <h2>Create a controlled payment</h2>
+        <p class="pill" style="margin-top:0">Amounts and merchants are deterministic fixtures in server code. The agent chooses a provider; AgentPay controls the spend.</p>
         <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px">
           <button type="button" data-scenario="openrouter">OpenRouter credits</button>
           <button type="button" data-scenario="firecrawl">Firecrawl credits</button>
           <button type="button" data-scenario="browserbase">Browserbase hours</button>
         </div>
-        <div id="credit-console" style="background:#0e1330;color:#cdd6ff;border-radius:10px;padding:14px;font-family:ui-monospace,Menlo,monospace;font-size:13px;min-height:210px;max-height:360px;overflow:auto">
+        <div id="credit-console" style="background:#111827;color:#d1d5db;border-radius:8px;padding:14px;font-family:ui-monospace,Menlo,monospace;font-size:13px;min-height:210px;max-height:360px;overflow:auto">
           <div class="cl muted">Ready. Pick a credit surface.</div>
         </div>
       </div>
@@ -734,11 +738,11 @@ export const renderCreditTopupDemo = ({ account }) => {
         </div>
         <div class="stat" style="margin-bottom:12px">
           <div class="n" id="credit-status">Idle</div>
-          <div class="l">Intent status</div>
+          <div class="l">Review status</div>
         </div>
-        <p class="pill" id="credit-summary" style="margin:0">No card or PSP key is exposed to the agent.</p>
+        <p class="pill" id="credit-summary" style="margin:0">No card or payment provider key is exposed to the agent.</p>
         <div class="row" style="margin-top:14px">
-          <a href="/m"><button class="ghost">Open wallet</button></a>
+          <a href="/m"><button class="ghost">Review in wallet</button></a>
           <a href="/audit"><button class="ghost">Audit trail</button></a>
         </div>
       </div>
@@ -780,6 +784,7 @@ export const renderCreditTopupDemo = ({ account }) => {
         var recent=document.getElementById('credit-recent');
         function esc(value){var d=document.createElement('div');d.textContent=value == null ? '' : String(value);return d.innerHTML;}
         function money(value){var n=Number(value);if(!Number.isFinite(n))return '—';return n.toFixed(2).replace('.',',')+' EUR';}
+        function statusLabel(value){return value === 'pending_reversible' ? 'Pending review' : String(value || '—');}
         function line(event,detail){
           var d=document.createElement('div');
           d.className='cl';
@@ -789,7 +794,7 @@ export const renderCreditTopupDemo = ({ account }) => {
         }
         function addRecent(intent){
           var row=document.createElement('tr');
-          row.innerHTML='<td><span class="mono pill">'+esc(intent.intentId)+'</span></td><td>'+esc(intent.merchant)+'<div class="pill">'+esc(intent.claim)+'</div></td><td><b>'+esc(money(Number(intent.amount)))+'</b></td><td><span class="badge" style="background:#e0e7ff;color:#3730a3">'+esc(intent.status)+'</span></td><td><span class="mono pill">'+esc(intent.molliePaymentId || 'null until commit')+'</span></td>';
+          row.innerHTML='<td><span class="mono pill">'+esc(intent.intentId)+'</span></td><td>'+esc(intent.merchant)+'<div class="pill">'+esc(intent.claim)+'</div></td><td><b>'+esc(money(Number(intent.amount)))+'</b></td><td><span class="badge" style="background:#dbeafe;color:#1e40af">'+esc(statusLabel(intent.status))+'</span></td><td><span class="mono pill">'+esc(intent.molliePaymentId || 'null until commit')+'</span></td>';
           if(recent.querySelector('.pill')) recent.innerHTML='';
           recent.prepend(row);
         }
@@ -798,7 +803,7 @@ export const renderCreditTopupDemo = ({ account }) => {
             var scenario=btn.getAttribute('data-scenario');
             btn.disabled=true;
             out.innerHTML='';
-            line('agent.request','credit top-up scenario: '+scenario);
+            line('agent.request','credit provider: '+scenario);
             fetch('/demo/credit-topup',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({scenario:scenario})})
               .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
               .then(function(data){
@@ -806,9 +811,9 @@ export const renderCreditTopupDemo = ({ account }) => {
                 line('verifier',data.verifier ? (data.verifier.allow ? 'allow' : 'block')+' · '+data.verifier.reason : 'verifier returned');
                 line('intent.created',data.intentId+' · molliePaymentId='+(data.molliePaymentId || 'null'));
                 amount.textContent=money(Number(data.amount));
-                status.textContent=data.status;
+                status.textContent=statusLabel(data.status);
                 status.style.color=data.status === 'pending_reversible' ? 'var(--brand)' : 'var(--ink)';
-                summary.textContent='Intent prepared for '+data.merchant+'. Open the wallet to undo or confirm. Money has not moved.';
+                summary.textContent='Payment request prepared for '+data.merchant+'. Open the wallet to review, undo, or commit. Money has not moved.';
                 addRecent(data);
               })
               .catch(function(err){
@@ -873,7 +878,7 @@ export const renderAudit = (entries) => {
     </tr>`).join('') || '<tr><td colspan="4" class="pill">No audit entries.</td></tr>';
   return layout('AgentPay · Audit', `
     <h1>Audit trail</h1>
-    <p class="sub">Every decision is traced: who, what, why, who approved, and the Codex verdict. This is the approval and accountability layer.</p>
+    <p class="sub">Every decision is traced: who, what, why, who approved, and the verifier verdict. This is the approval and accountability layer.</p>
     <div class="card"><table><thead><tr><th>Time</th><th>Payment</th><th>Event</th><th>Detail</th></tr></thead><tbody>${rows}</tbody></table></div>`);
 };
 
@@ -885,8 +890,8 @@ export const manifestJson = () => JSON.stringify({
   start_url: '/m',
   scope: '/',
   display: 'standalone',
-  background_color: '#0f1222',
-  theme_color: '#4f46e5',
+  background_color: '#f8fafc',
+  theme_color: '#1d4ed8',
   icons: [{
     src: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%234f46e5%22/%3E%3Cpath d=%22M24 52c0-15 12-27 27-27 8 0 16 4 21 10l-8 8c-3-4-8-7-13-7-9 0-16 7-16 16s7 16 16 16c7 0 13-5 15-11h-18V46h31v5c0 17-12 28-28 28-15 0-27-12-27-27Z%22 fill=%22white%22/%3E%3C/svg%3E',
     sizes: '192x192',
@@ -912,46 +917,47 @@ self.addEventListener('notificationclick', (event) => {
 
 export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentIntent', `
   <style>
-    body{background:#eef0f4;color:#111827}
+    body{background:#f1f5f9;color:#111827}
     main{max-width:540px;padding:14px 14px 42px}
     header{display:none}
     nav{display:none}
-    .wallet-shell{background:#f8fafc;border:1px solid #cfd5e1;border-radius:10px;overflow:hidden}
-    .wallet-head{background:#10131f;color:#fff;padding:18px 18px 20px}
+    .wallet-shell{background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden}
+    .wallet-head{background:#fff;color:#111827;padding:18px 18px 20px;border-bottom:1px solid #e2e8f0}
     .wallet-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
     .wallet-brand{font-family:var(--font-display);font-size:18px;font-weight:700;letter-spacing:0}
-    .wallet-status{font-size:12px;color:#b8c0d9;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 9px;white-space:nowrap}
-    .mobile-hero{padding-top:24px}
-    .mobile-hero h1{font-size:31px;line-height:1.02;margin:0 0 9px;color:#fff}
-    .mobile-hero p{font-size:14px;color:#cbd3ea;margin:0;max-width:42ch}
+    .wallet-status{font-size:12px;color:#1e40af;background:#dbeafe;border:1px solid #bfdbfe;border-radius:999px;padding:5px 9px;white-space:nowrap}
+    .mobile-hero{padding-top:22px}
+    .mobile-hero h1{font-size:28px;line-height:1.08;margin:0 0 9px;color:#111827}
+    .mobile-hero p{font-size:14px;color:#475569;margin:0;max-width:42ch}
     .wallet-body{padding:14px}
     .demo-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-    .demo-actions button{min-height:48px;border-radius:8px;background:#111827}
+    .demo-actions button{min-height:48px;border-radius:8px;background:#1d4ed8}
     .demo-actions .secondary{background:#fff;color:#111827;border:1px solid #d7dce7}
-    .intent-card{border:1px solid #d9dee8;background:#fff;border-radius:10px;padding:16px;margin-bottom:12px}
+    .intent-card{border:1px solid #d9dee8;background:#fff;border-radius:8px;padding:16px;margin-bottom:12px}
     .intent-card.blocked{border-color:#fecaca;background:#fffafa}
     .intent-card.allowed{border-color:#bbf7d0}
     .blocked-stamp{font-size:13px;font-weight:900;color:#991b1b;background:#fee2e2;border:1px solid #fecaca;border-radius:999px;padding:7px 11px;white-space:nowrap}
     .intent-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
     .intent-amount{font-family:var(--font-display);font-size:34px;font-weight:700;letter-spacing:0;margin-top:10px}
     .intent-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;font-weight:800}
+    .object-label{font-size:13px;color:#475569;font-weight:700;margin-bottom:2px}
     .intent-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-    .intent-box{border:1px solid #e5e7eb;border-radius:10px;padding:10px;background:#f9fafb;min-width:0}
+    .intent-box{border:1px solid #e5e7eb;border-radius:8px;padding:10px;background:#f9fafb;min-width:0}
     .intent-box b{display:block;font-size:13px;overflow-wrap:anywhere}
     .intent-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
     .intent-actions button{width:100%;min-height:46px;border-radius:8px}
     .intent-actions .danger{background:#ef4444}
     .countdown{font-size:13px;font-weight:800;color:#111827;background:#fef3c7;border-radius:999px;padding:6px 10px;white-space:nowrap}
-    .null-id{font-size:12px;color:#374151;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-top:12px}
-    .empty-state{border-style:dashed;text-align:center;padding:28px 18px;border-radius:10px;background:#fff}
+    .null-id{font-size:12px;color:#374151;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:10px;margin-top:12px}
+    .empty-state{border-style:dashed;text-align:center;padding:28px 18px;border-radius:8px;background:#fff}
     .trust-rail{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0}
-    .trust-dot{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px;min-height:66px}
+    .trust-dot{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px;min-height:66px}
     .trust-dot .n{font-size:14px;font-weight:800;color:#111827}
     .trust-dot .l{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin-top:3px}
-    .toast{display:none;background:#111827;color:#fff;border-radius:10px;padding:11px 12px;margin-bottom:12px;font-size:13px}
+    .toast{display:none;background:#111827;color:#fff;border-radius:8px;padding:11px 12px;margin-bottom:12px;font-size:13px}
     .verdict{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px}
     .verdict .chip{font-size:12px;padding:5px 10px}
-    @media(max-width:430px){main{padding:8px}.wallet-shell{border-radius:10px}.intent-grid,.demo-actions,.trust-rail{grid-template-columns:1fr}.intent-top{display:block}.countdown{display:inline-block;margin-top:8px}}
+    @media(max-width:430px){main{padding:8px}.wallet-shell{border-radius:8px}.intent-grid,.demo-actions,.trust-rail{grid-template-columns:1fr}.intent-top{display:block}.countdown{display:inline-block;margin-top:8px}}
   </style>
   <div class="wallet-shell">
     <section class="wallet-head">
@@ -960,28 +966,28 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
         <div class="wallet-status">Wallet ready</div>
       </div>
       <div class="mobile-hero">
-        <h1>Undo money for AI agents</h1>
-        <p>Agents can prepare payments. You keep the final move.</p>
+        <h1>Review agent payments before money moves</h1>
+        <p>AI agents can prepare payments. You keep approval, undo, and commit controls.</p>
       </div>
     </section>
 
     <section class="wallet-body">
       <div class="demo-actions">
-        <button onclick="demoIntent('clean')">Create clean intent</button>
+        <button onclick="demoIntent('clean')">Prepare test payment</button>
         <button class="secondary" onclick="demoIntent('liar')">Test suspicious intent</button>
       </div>
       <div id="toast" class="toast"></div>
 
       <div class="trust-rail">
-        <div class="trust-dot"><div class="n">Intent</div><div class="l">prepared</div></div>
-        <div class="trust-dot"><div class="n">Undo</div><div class="l">available</div></div>
+        <div class="trust-dot"><div class="n">Request</div><div class="l">prepared</div></div>
+        <div class="trust-dot"><div class="n">Review</div><div class="l">available</div></div>
         <div class="trust-dot"><div class="n">Commit</div><div class="l">controlled</div></div>
       </div>
 
       <div id="notifs"></div>
       <div id="empty" class="empty-state">
         <h2 style="margin-bottom:6px">No pending intents</h2>
-        <p class="pill" style="margin:0">Create a scene to start the wallet flow.</p>
+        <p class="pill" style="margin:0">Prepare a test payment to start the wallet flow.</p>
       </div>
     </section>
   </div>
@@ -1003,11 +1009,11 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
       window.demoIntent=function(scenario){
         var toast=document.getElementById('toast');
         toast.style.display='block';
-        toast.textContent=scenario === 'liar' ? 'Suspicious agent intent incoming...' : 'Clean agent intent incoming...';
+        toast.textContent=scenario === 'liar' ? 'Preparing suspicious payment request...' : 'Preparing payment request...';
         fetch('/demo/reversible-intent?scenario='+encodeURIComponent(scenario),{method:'POST'})
           .then(function(r){return r.json();})
           .then(function(data){
-            toast.textContent=data.error ? data.error : 'Intent '+data.intentId+' ready. Money has not moved.';
+            toast.textContent=data.error ? data.error : 'Payment request prepared. Money has not moved.';
             setTimeout(refreshOnce, 180);
           })
           .catch(function(err){toast.textContent='Demo error: '+err.message;});
@@ -1020,7 +1026,7 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
           ? '<div class="intent-actions" style="grid-template-columns:1fr"><button class="danger" onclick="act(\\''+esc(p.intentId)+'\\',\\'undo\\')">Undo</button></div>'
           : '<div class="intent-actions"><button class="danger" onclick="act(\\''+esc(p.intentId)+'\\',\\'undo\\')">Undo</button><button onclick="act(\\''+esc(p.intentId)+'\\',\\'confirm\\')">Commit</button></div>';
         return '<article class="intent-card '+(blocked?'blocked':allowed?'allowed':'')+'">'+
-          '<div class="intent-top"><div><div class="intent-label">ReversiblePaymentIntent</div><div class="mono pill">'+esc(p.intentId)+'</div></div>'+topRight+'</div>'+
+          '<div class="intent-top"><div><div class="object-label">Object · ReversiblePaymentIntent</div><div class="mono pill">'+esc(p.intentId)+'</div></div>'+topRight+'</div>'+
           '<div class="intent-amount">'+esc(p.amount)+' '+esc(p.currency)+'</div>'+
           '<div class="intent-grid">'+
             '<div class="intent-box"><span class="intent-label">Payee</span><b>'+esc(p.merchant || '?')+'</b></div>'+
