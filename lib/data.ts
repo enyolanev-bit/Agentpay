@@ -149,6 +149,48 @@ export const adversarialAudit: AuditEvent[] = [
   },
 ]
 
+export interface AgentWallet {
+  agentName: string
+  ownerName: string
+  cardLast4: string
+  balance: number
+  currency: string
+  monthlyCap: number
+  spentThisMonth: number
+}
+
+export const agentWallet: AgentWallet = {
+  agentName: "Atlas",
+  ownerName: "Enyola N.",
+  cardLast4: "4827",
+  balance: 184.5,
+  currency: "USD",
+  monthlyCap: 500,
+  spentThisMonth: 315.5,
+}
+
+export interface GiftProposal {
+  giftId: string
+  recipient: string
+  occasion: string
+  item: string
+  amount: number
+  currency: string
+  reason: string
+  status: "awaiting_approval"
+}
+
+export const giftProposal: GiftProposal = {
+  giftId: "gft_5d31aa90",
+  recipient: "Maya (sister)",
+  occasion: "Birthday · June 28",
+  item: "Spotify gift card",
+  amount: 30.0,
+  currency: "USD",
+  reason: "Agent noticed an upcoming birthday in your calendar and suggests a gift.",
+  status: "awaiting_approval",
+}
+
 export const stats = [
   { label: "Pending review", value: "3", hint: "awaiting human approval" },
   { label: "Committed today", value: "$612.40", hint: "across 14 intents" },
