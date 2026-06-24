@@ -7,7 +7,12 @@ AgentPay includes a minimal MCP stdio server that exposes the HTTP API as agent 
 Start AgentPay first:
 
 ```bash
-SIMULATE_PAYMENTS=1 VERIFIER_MODE=heuristic npm run dev
+SIMULATE_PAYMENTS=1 \
+VERIFIER_MODE=heuristic \
+DECIDER_MODE=fallback \
+MOLLIE_API_KEY=test_dummy \
+BASE_URL=http://localhost:3000 \
+npm run dev
 ```
 
 In another process, run the MCP server:

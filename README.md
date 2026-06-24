@@ -51,9 +51,14 @@ An agent can prepare a payment, but AgentPay keeps `molliePaymentId:null` until 
 
 ```bash
 git clone https://github.com/your-org/agentpay.git
-cd Agentpay
+cd agentpay
 npm install
-SIMULATE_PAYMENTS=1 VERIFIER_MODE=heuristic npm run dev
+SIMULATE_PAYMENTS=1 \
+VERIFIER_MODE=heuristic \
+DECIDER_MODE=fallback \
+MOLLIE_API_KEY=test_dummy \
+BASE_URL=http://localhost:3000 \
+npm run dev
 ```
 
 Open:
@@ -64,6 +69,12 @@ Open:
 - `http://localhost:3000/audit` for the audit trail;
 - `http://localhost:3000/task` for the live agent demo.
 - `http://localhost:3000/earn` for the agent revenue demo.
+
+Get the demo agent token for API calls:
+
+```bash
+curl http://localhost:3000/api/demo-token
+```
 
 Run the full demo:
 
@@ -167,8 +178,8 @@ AgentPay exposes the same trust layer through MCP so agents can request payment 
 - `agentpay.list_pending_intents`
 - `agentpay.undo_intent`
 - `agentpay.confirm_intent`
-- `agentpay.get_allowance`
-- `agentpay.get_audit_events`
+- `agentpay.pay_agent`
+- `agentpay.get_payment`
 
 The API remains the stable backend interface. MCP sits above it for agent runtimes and local assistants.
 
@@ -196,11 +207,13 @@ For local demos:
 SIMULATE_PAYMENTS=1
 VERIFIER_MODE=heuristic
 DECIDER_MODE=fallback
+MOLLIE_API_KEY=test_dummy
+BASE_URL=http://localhost:3000
 PORT=3000
 AGENTPAY_DATA_FILE=data/agentpay.json
 ```
 
-For Mollie test mode:
+For Mollie test mode with public webhooks:
 
 ```bash
 MOLLIE_API_KEY=test_...
