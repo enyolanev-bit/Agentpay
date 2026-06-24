@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "needsPayment": { "type": "boolean" },
+    "payee": { "type": "string" },
+    "reason": { "type": "string" }
+  },
+  "required": ["needsPayment", "payee", "reason"],
+  "additionalProperties": false
+}

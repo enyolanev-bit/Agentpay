@@ -1,0 +1,23 @@
+{
+  "name": "agentpay",
+  "version": "1.0.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "Trust layer for AI agent payments: reversible intents, deterministic policy, audit, and Mollie rails.",
+  "exports": {
+    ".": "./sdk/client.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "mcp": "node mcp/server.js",
+    "example:agent": "node examples/node-agent/agent.js",
+    "audit:publish": "node scripts/audit-publication.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@mollie/api-client": "^4.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

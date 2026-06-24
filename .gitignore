@@ -1,0 +1,18 @@
+node_modules/
+.env
+*.log
+.DS_Store
+data/
+.gstack/
+
+# skills CLI artifacts
+.agents/
+SKILL.md
+skills-lock.json
+.vercel
+
+# Private notes and local-only material must never enter this public technical repo.
+private/
+**/private/
+notes/
+**/notes/

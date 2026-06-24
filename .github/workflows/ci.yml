@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Deterministic, no-network mode: never touches Codex or real Mollie.
+      SIMULATE_PAYMENTS: '1'
+      DECIDER_MODE: fallback
+      VERIFIER_MODE: heuristic
+      # Dummy values so module imports that read these never exit the process in CI.
+      MOLLIE_API_KEY: test_ci_dummy
+      BASE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install deps
+        run: npm ci || npm install
+      - name: Run tests
+        run: npm test
