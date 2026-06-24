@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+
+  --radius-card: 8px;
+}
+
+:root {
+  --background: #07080f;
+  --foreground: #e6e8f0;
+
+  --card: #0e1120;
+  --card-foreground: #e6e8f0;
+
+  --muted: #161a2e;
+  --muted-foreground: #8a90a8;
+
+  --border: #1f2440;
+  --input: #1f2440;
+  --ring: #6366f1;
+
+  --primary: #4f6bff;
+  --primary-foreground: #ffffff;
+
+  --accent: #8b5cf6;
+  --accent-foreground: #ffffff;
+
+  --success: #22c55e;
+  --success-foreground: #062b13;
+
+  --warning: #f5a524;
+  --warning-foreground: #3a2606;
+
+  --danger: #f43f5e;
+  --danger-foreground: #3b0712;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-in-out infinite;
+}
+
+@keyframes flow-dash {
+  to { stroke-dashoffset: -16; }
+}
+.animate-flow {
+  stroke-dasharray: 6 6;
+  animation: flow-dash 1s linear infinite;
+}
+
+@keyframes dot-travel {
+  0% { offset-distance: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
