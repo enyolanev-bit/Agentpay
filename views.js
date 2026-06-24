@@ -125,6 +125,47 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
   .event-line{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(209,213,219,.12)}
   .event-line:last-child{border-bottom:0}
   .event-line span{color:#93c5fd}.event-line b{color:#e5e7eb;font-weight:600}
+  .product-composition{position:relative;overflow:hidden;border:1px solid #c7d2fe;background:linear-gradient(135deg,#fff 0%,#f8fafc 48%,#eef2ff 100%);border-radius:8px;padding:22px;margin-bottom:16px}
+  .composition-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:16px}
+  .composition-head h2{font-size:18px;text-transform:none;color:var(--ink);margin:0 0 4px}
+  .composition-head p{margin:0;color:#475569;font-size:14px;max-width:68ch}
+  .composition-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(230px,.75fr);gap:16px;align-items:stretch}
+  .product-surface{background:#fff;border:1px solid rgba(148,163,184,.5);border-radius:8px;box-shadow:0 18px 45px rgba(15,23,42,.08);min-width:0}
+  .surface-bar{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:10px 12px}
+  .surface-bar b{font-size:13px;color:var(--ink)}
+  .console-shell{display:grid;grid-template-columns:150px minmax(0,1fr);min-height:430px}
+  .console-sidebar{border-right:1px solid var(--line);background:#fbfdff;padding:14px 10px}
+  .console-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--ink);margin:0 0 14px}
+  .console-mark{width:18px;height:18px;border-radius:6px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 6px 14px rgba(52,72,255,.22)}
+  .console-nav{display:grid;gap:4px}
+  .console-item{display:flex;align-items:center;gap:8px;border-radius:7px;padding:7px 8px;color:#475569;font-size:12px;font-weight:700}
+  .console-item:before{content:"";width:5px;height:5px;border-radius:50%;background:#cbd5e1;flex:0 0 auto}
+  .console-item.active{background:#eef2ff;color:var(--brand)}
+  .console-item.active:before{background:var(--brand)}
+  .console-item.connect{margin-top:8px;border:1px solid #c7d2fe;background:#fff;color:var(--brand)}
+  .console-main{min-width:0}
+  .surface-body{padding:14px}
+  .surface-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;background:#fbfdff}
+  .surface-row:last-child{margin-bottom:0}
+  .surface-row b{display:block;font-size:14px;color:var(--ink)}
+  .surface-row span{font-size:12px;color:#475569}
+  .mini-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+  .mini-metric{border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff}
+  .mini-metric b{display:block;font-size:14px}.mini-metric span{font-size:10px;text-transform:uppercase;color:#64748b;font-weight:800}
+  .intent-combo{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.62fr);gap:10px;margin-top:10px}
+  .intent-panel{border:1px solid #c7d2fe;border-top:3px solid var(--brand);border-radius:8px;padding:12px;background:#fff}
+  .intent-panel h3{font-size:17px;margin:2px 0 8px;color:var(--ink)}
+  .intent-amount{font-size:28px;font-weight:800;letter-spacing:0;margin:8px 0;color:var(--ink)}
+  .decision-stack{display:grid;gap:8px}
+  .decision{border:1px solid var(--line);border-radius:8px;padding:10px;background:#f8fafc}
+  .decision b{display:block;font-size:13px;color:var(--ink)}.decision span{display:block;font-size:12px;color:#475569;margin-top:2px}
+  .wallet-frame{background:#111827;border:1px solid #1e293b;border-radius:24px;padding:10px;box-shadow:0 18px 45px rgba(15,23,42,.16)}
+  .wallet-screen{background:#f8fafc;border-radius:16px;padding:13px;min-height:100%}
+  .wallet-screen h3{font-size:15px;margin:2px 0 10px;color:var(--ink)}
+  .wallet-object{border:1px solid #c7d2fe;border-radius:8px;background:#fff;padding:10px;margin-bottom:10px}
+  .wallet-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .wallet-actions span{display:block;text-align:center;border-radius:8px;padding:8px 6px;font-size:12px;font-weight:800;border:1px solid #c7d2fe;color:var(--brand);background:#fff}
+  .wallet-actions span:last-child{background:var(--brand);color:#fff}
   .lamp{padding:8px 12px;border-radius:999px;font-size:13px;font-weight:700;background:#eef0f4;color:#667085;border:1px solid var(--line);position:relative;overflow:hidden}
   .lamp.run{background:#fef3c7;color:#92400e;border-color:#f5c976;animation:pulse 1s infinite}
   .lamp.ok{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
@@ -143,6 +184,14 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
     main{padding:18px 14px 48px}
     .arrow{display:none}
     .live-shell,.protocol-shell{grid-template-columns:1fr}
+    .composition-head{display:block}
+    .composition-grid,.intent-combo{grid-template-columns:1fr}
+    .console-shell{grid-template-columns:1fr;min-height:0}
+    .console-sidebar{border-right:0;border-bottom:1px solid var(--line);padding:12px}
+    .console-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .console-item{font-size:11px;padding:7px 6px}
+    .mini-metrics{grid-template-columns:1fr}
+    .product-composition{padding:16px}
     .object-meta{grid-template-columns:1fr}
     .status-rail{grid-template-columns:1fr}
     .budget-head{display:block}
@@ -173,6 +222,87 @@ const pipeline = () => `
     <div class="arrow">→</div>
     <div class="step"><div class="k">Execution</div><div class="t">Mollie</div><div class="d">Charges the mandate without checkout. Money moves only after approval.</div></div>
   </div>`;
+
+const productComposition = () => `
+  <section class="product-composition" aria-label="AgentPay product composition">
+    <div class="composition-head">
+      <div>
+        <h2>Protocol view for controlled agent spend</h2>
+        <p>One surface connects the agent budget profile, policy decision, prepared payment object, review controls, and audit trail before settlement.</p>
+      </div>
+      <span class="status-pill">Money not moved</span>
+    </div>
+    <div class="composition-grid">
+      <div class="product-surface">
+        <div class="surface-bar">
+          <b>AgentPay dashboard</b>
+          <span class="chip mono">policy.live</span>
+        </div>
+        <div class="console-shell">
+          <aside class="console-sidebar" aria-label="AgentPay console navigation">
+            <div class="console-brand"><span class="console-mark" aria-hidden="true"></span>AgentPay</div>
+            <div class="console-nav">
+              <div class="console-item active">Home</div>
+              <div class="console-item">Agents</div>
+              <div class="console-item">Budgets</div>
+              <div class="console-item">Payments</div>
+              <div class="console-item">Approvals</div>
+              <div class="console-item">Audit</div>
+              <div class="console-item connect">Connect agent</div>
+            </div>
+          </aside>
+          <div class="console-main">
+            <div class="surface-body">
+              <div class="surface-row">
+                <div><b>Agent budget profile</b><span>Developer agent · daily budget used 24%</span></div>
+                <span class="chip">Profile active</span>
+              </div>
+              <div class="mini-metrics">
+                <div class="mini-metric"><b>48,00 EUR</b><span>Prepared payment</span></div>
+                <div class="mini-metric"><b>0,00 EUR</b><span>Money moved</span></div>
+                <div class="mini-metric"><b>Review</b><span>Commit state</span></div>
+              </div>
+              <div class="intent-combo">
+                <div class="intent-panel">
+                  <div class="object-label">Object · ReversiblePaymentIntent</div>
+                  <h3>ReversiblePaymentIntent</h3>
+                  <div class="status-rail">
+                    <div class="rail-step active"><b>Request</b><span>agent prepared</span></div>
+                    <div class="rail-step active"><b>Review</b><span>human pending</span></div>
+                    <div class="rail-step"><b>Commit</b><span>held</span></div>
+                  </div>
+                  <div class="intent-amount">48,00 EUR</div>
+                  <div class="object-meta">
+                    <div class="object-box"><span>Provider</span><b>OpenRouter credits</b></div>
+                    <div class="object-box"><span>Payment</span><b>null until commit</b></div>
+                  </div>
+                </div>
+                <div class="decision-stack">
+                  <div class="decision"><b>Policy decision</b><span>Allowed merchant, inside daily cap, review threshold reached.</span></div>
+                  <div class="decision"><b>Prepared payment</b><span>Intent created; settlement remains held.</span></div>
+                  <div class="decision"><b>Audit</b><span>Request, verifier, review, and commit are attributable.</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="wallet-frame" aria-label="Mobile wallet review">
+        <div class="wallet-screen">
+          <h3>Mobile review</h3>
+          <div class="wallet-object">
+            <div class="object-label">Object · ReversiblePaymentIntent</div>
+            <div class="intent-amount" style="font-size:25px">48,00 EUR</div>
+            <div class="pill">OpenRouter credits</div>
+            <div class="status-rail" style="grid-template-columns:1fr;margin:10px 0">
+              <div class="rail-step active"><b>Human review</b><span>money not moved</span></div>
+            </div>
+          </div>
+          <div class="wallet-actions"><span>Undo</span><span>Commit</span></div>
+        </div>
+      </div>
+    </div>
+  </section>`;
 
 // --- Marketplace ----------------------------------------------------------
 
@@ -494,6 +624,7 @@ export const renderDashboard = ({ account, pending, baseUrl }) => {
 
   return layout('AgentPay · Dashboard', `
     ${productHero}
+    ${productComposition()}
     ${consumerFlow}
     ${stats}
     ${reversibleCard}
@@ -786,6 +917,7 @@ export const renderCreditTopupDemo = ({ account }) => {
         <p>AgentPay fixes the amount in server code, verifies the request, and keeps settlement behind human review.</p>
       </div>
     </section>
+    ${productComposition()}
 
     <div class="grid stats" style="margin-bottom:16px">
       <div class="stat"><div class="n">Credits</div><div class="l">Spend type</div></div>
