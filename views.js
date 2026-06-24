@@ -399,7 +399,7 @@ export const renderDashboard = ({ account, pending, baseUrl }) => {
 
   const reversibleCard = `<div class="card">
     <div class="row" style="justify-content:space-between;align-items:center">
-      <div><h2>ReversiblePaymentIntents</h2><p class="pill" style="margin:0">Prepared payments that have not been captured yet. <span class="mono">molliePaymentId:null</span> is intentional until commit.</p></div>
+      <div><h2>Prepared payments before commit</h2><p class="pill" style="margin:0">ReversiblePaymentIntent records that have not been captured yet. <span class="mono">molliePaymentId:null</span> is intentional until commit.</p></div>
       <a href="/m"><button>Control on mobile</button></a>
     </div>
     <table style="margin-top:12px"><thead><tr><th>Intent</th><th>Destination</th><th>Amount</th><th>Verifier</th><th>Commit after</th></tr></thead><tbody>${reversibleRows}</tbody></table>
@@ -696,7 +696,7 @@ export const renderCreditTopupDemo = ({ account }) => {
       <div style="max-width:790px">
         <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#9ee7c4;font-weight:800;margin-bottom:8px">AgentPay · credit/spend control</div>
         <h1 style="font-size:34px;line-height:1.02;margin-bottom:10px">An agent needs more credits. Who approves the spend?</h1>
-        <p style="margin:0;color:#d8dcff;max-width:68ch">This is the wedge: agents will need to buy OpenRouter inference credits, Firecrawl web-data credits, Browserbase browser hours, or other usage credits. AgentPay sits between the agent and the money.</p>
+        <p style="margin:0;color:#d8dcff;max-width:68ch">Common agent spend surfaces include OpenRouter inference credits, Firecrawl web-data credits, Browserbase browser hours, or other usage credits. AgentPay sits between the agent and the money.</p>
       </div>
     </section>
 
@@ -873,7 +873,7 @@ export const renderAudit = (entries) => {
     </tr>`).join('') || '<tr><td colspan="4" class="pill">No audit entries.</td></tr>';
   return layout('AgentPay · Audit', `
     <h1>Audit trail</h1>
-    <p class="sub">Every decision is traced: who, what, why, who approved, and the Codex verdict. This is the compliance and liability-sink argument.</p>
+    <p class="sub">Every decision is traced: who, what, why, who approved, and the Codex verdict. This is the approval and accountability layer.</p>
     <div class="card"><table><thead><tr><th>Time</th><th>Payment</th><th>Event</th><th>Detail</th></tr></thead><tbody>${rows}</tbody></table></div>`);
 };
 
@@ -968,7 +968,7 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
     <section class="wallet-body">
       <div class="demo-actions">
         <button onclick="demoIntent('clean')">Create clean intent</button>
-        <button class="secondary" onclick="demoIntent('liar')">Catch lying agent</button>
+        <button class="secondary" onclick="demoIntent('liar')">Test suspicious intent</button>
       </div>
       <div id="toast" class="toast"></div>
 
@@ -994,7 +994,7 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
       function seconds(ms){return Math.max(0,Math.ceil((Number(ms)-Date.now())/1000));}
       function verdict(v){
         if(!v)return '<div class="verdict"><span class="chip">Verifier running</span><span class="pill">waiting</span></div>';
-        return '<div class="verdict"><span class="chip '+(v.allow?'ok':'bad')+'">'+(v.allow?'Verified clean':'BLOCKED BY CODEX')+'</span><span class="pill">'+esc(v.source || '')+'</span></div>';
+        return '<div class="verdict"><span class="chip '+(v.allow?'ok':'bad')+'">'+(v.allow?'Verified clean':'Blocked by verifier')+'</span><span class="pill">'+esc(v.source || '')+'</span></div>';
       }
       window.act=function(id,what){
         fetch('/pay/'+encodeURIComponent(id)+'/'+what,{method:'POST'})
@@ -1015,7 +1015,7 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
       function card(p){
         var blocked=p.verifier && p.verifier.allow===false;
         var allowed=p.verifier && p.verifier.allow===true;
-        var topRight=blocked?'<div class="blocked-stamp">BLOCKED BY CODEX</div>':'<div class="countdown">'+seconds(p.commitAfterMs)+'s left</div>';
+        var topRight=blocked?'<div class="blocked-stamp">Blocked by verifier</div>':'<div class="countdown">'+seconds(p.commitAfterMs)+'s left</div>';
         var actions=blocked
           ? '<div class="intent-actions" style="grid-template-columns:1fr"><button class="danger" onclick="act(\\''+esc(p.intentId)+'\\',\\'undo\\')">Undo</button></div>'
           : '<div class="intent-actions"><button class="danger" onclick="act(\\''+esc(p.intentId)+'\\',\\'undo\\')">Undo</button><button onclick="act(\\''+esc(p.intentId)+'\\',\\'confirm\\')">Commit</button></div>';
