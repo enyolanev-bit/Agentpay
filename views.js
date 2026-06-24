@@ -43,7 +43,7 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <title>${escapeHtml(title)}</title>
 <style>
-  :root{--ink:#111827;--ink2:#1f2937;--mut:#64748b;--line:#e2e8f0;--brand:#1d4ed8;--brand2:#38bdf8;--bg:#f8fafc;--ok:#047857;--bad:#b91c1c;--warn:#b45309;
+  :root{--ink:#111827;--ink2:#1f2937;--mut:#64748b;--line:#e2e8f0;--brand:#3448ff;--brand2:#6d28d9;--bg:#f8fafc;--ok:#047857;--bad:#b91c1c;--warn:#b45309;
     --font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     --font-display:var(--font-sans)}
   *{box-sizing:border-box}
@@ -62,9 +62,9 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
   .card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px;margin-bottom:16px}
   .card.alert{border-color:#f5c976;background:#fffdf6}
   .product-panel{background:#fff;color:var(--ink);border-color:#cbd5e1;padding:24px}
-  .product-panel .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:0;color:#1d4ed8;font-weight:800;margin-bottom:8px}
+  .product-panel .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:0;color:#3448ff;font-weight:800;margin-bottom:8px}
   .product-panel h1{font-size:30px;line-height:1.08;margin-bottom:10px}
-  .product-panel p{margin:0 0 18px;color:#475569;max-width:68ch}
+  .product-panel p{margin:0 0 18px;color:#334155;max-width:68ch}
   .grid{display:grid;gap:14px}
   .stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
   .stat{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 16px}
@@ -80,9 +80,9 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
   .chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;background:#eef0f4;color:#475467}
   .chip.ok{background:#d1fae5;color:var(--ok)} .chip.bad{background:#fee2e2;color:var(--bad)}
   .role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0;padding:3px 9px;border-radius:6px}
-  .role.payer{background:#dbeafe;color:#1e40af} .role.provider{background:#dcfce7;color:#166534}
+  .role.payer{background:#eef2ff;color:#3730a3} .role.provider{background:#dcfce7;color:#166534}
   button{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:9px 15px;font-size:14px;font-weight:600;cursor:pointer}
-  button:hover{background:#1e40af} button.ghost{background:#fff;color:var(--brand);border:1px solid #bfdbfe} button.danger{background:#dc2626}
+  button:hover{background:#2537d6} button.ghost{background:#fff;color:var(--brand);border:1px solid #c7d2fe} button.danger{background:#dc2626}
   input,select,textarea{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
   label{display:block;font-size:12px;color:var(--mut);margin:0 0 4px;font-weight:600}
   .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
@@ -95,6 +95,24 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
   .price{font-size:24px;font-weight:800;letter-spacing:0;color:var(--ink)}
   .earnings{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
   .live-shell{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:16px;align-items:start}
+  .protocol-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.72fr);gap:16px;align-items:start}
+  .object-card{background:#fff;border:1px solid #c7d2fe;border-top:3px solid var(--brand);border-radius:8px;padding:18px;margin-bottom:16px}
+  .object-card h2{font-size:17px;text-transform:none;color:var(--ink);margin:0 0 12px}
+  .object-label{font-size:12px;color:#475569;font-weight:700;margin-bottom:2px}
+  .object-amount{font-size:34px;font-weight:800;letter-spacing:0;margin:12px 0 4px}
+  .object-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .object-box{border:1px solid var(--line);border-radius:8px;background:#f8fafc;padding:10px;min-width:0}
+  .object-box span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:0;color:#64748b;font-weight:800}
+  .object-box b{display:block;font-size:13px;overflow-wrap:anywhere;margin-top:2px;color:#111827}
+  .status-pill{display:inline-flex;align-items:center;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:800}
+  .status-rail{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+  .rail-step{border:1px solid var(--line);border-radius:8px;background:#f8fafc;padding:10px;min-height:58px}
+  .rail-step b{display:block;font-size:13px}.rail-step span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:0;color:#64748b;margin-top:2px}
+  .rail-step.active{border-color:#c7d2fe;background:#eef2ff}
+  .event-stream{background:#111827;color:#d1d5db;border-radius:8px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:13px;min-height:210px;max-height:360px;overflow:auto}
+  .event-line{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(209,213,219,.12)}
+  .event-line:last-child{border-bottom:0}
+  .event-line span{color:#93c5fd}.event-line b{color:#e5e7eb;font-weight:600}
   .lamp{padding:8px 12px;border-radius:999px;font-size:13px;font-weight:700;background:#eef0f4;color:#667085;border:1px solid var(--line);position:relative;overflow:hidden}
   .lamp.run{background:#fef3c7;color:#92400e;border-color:#f5c976;animation:pulse 1s infinite}
   .lamp.ok{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
@@ -109,7 +127,20 @@ const layout = (title, body) => `<!doctype html><html lang="en"><head>
   .step .k{font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:0}
   .step .t{font-weight:700;margin:2px 0 3px} .step .d{font-size:12.5px;color:var(--mut)}
   .arrow{display:flex;align-items:center;color:#c7cbf2;font-size:20px;padding:0 8px}
-  @media(max-width:760px){.arrow{display:none}.live-shell{grid-template-columns:1fr}}
+  @media(max-width:760px){
+    main{padding:18px 14px 48px}
+    .arrow{display:none}
+    .live-shell,.protocol-shell{grid-template-columns:1fr}
+    .object-meta{grid-template-columns:1fr}
+    .status-rail{grid-template-columns:1fr}
+    .rail-step{min-height:auto}
+    .event-line{grid-template-columns:1fr;gap:2px}
+    .card,.object-card,.object-box,.stat{min-width:0}
+    .card{overflow-x:auto}
+    .grid button{width:100%;overflow-wrap:anywhere}
+    .event-stream{overflow-wrap:anywhere}
+    .object-amount{font-size:30px}
+  }
 </style></head><body>
 <header>
   <div class="brand"><span class="dot"></span>AgentPay <small>· credit/spend control for AI agents</small></div>
@@ -140,7 +171,7 @@ export const renderMarket = () => layout('AgentPay · Marketplace', `
         <h2 style="color:#c7cbf2">Agent economy</h2>
         <p style="margin:0;max-width:62ch">Each card is an addressable counterparty. The price comes from the provider, money stays in integer cents, and the provider accrues A2A earnings.</p>
       </div>
-      <a href="/"><button style="background:#fff;color:#1e40af">Dashboard</button></a>
+      <a href="/"><button style="background:#fff;color:#3448ff">Dashboard</button></a>
     </div>
   </div>
 
@@ -698,9 +729,9 @@ export const renderCreditTopupDemo = ({ account }) => {
   return layout('AgentPay · Credit top-up control', `
     <section class="card product-panel">
       <div style="max-width:790px">
-        <div class="eyebrow">AgentPay · Credit spend controls</div>
-        <h1>Create a controlled credit payment.</h1>
-        <p>AI agents can request usage credits from known providers. AgentPay fixes the amount in server code, verifies the request, and keeps settlement behind review controls.</p>
+        <div class="eyebrow">AgentPay · Payment protocol for AI agents</div>
+        <h1>Review agent payments before money moves.</h1>
+        <p>AgentPay fixes the amount in server code, verifies the request, and keeps settlement behind human review.</p>
       </div>
     </section>
 
@@ -716,31 +747,39 @@ export const renderCreditTopupDemo = ({ account }) => {
       <div class="pipe">${providerCards}</div>
     </div>
 
-    <div class="live-shell">
+    <div class="protocol-shell">
       <div class="card">
-        <h2>Create a controlled payment</h2>
-        <p class="pill" style="margin-top:0">Amounts and merchants are deterministic fixtures in server code. The agent chooses a provider; AgentPay controls the spend.</p>
+        <h2>Protocol inspector</h2>
+        <p class="pill" style="margin-top:0;color:#334155">Provider selected by the agent. Amount, merchant, verification, and settlement stay controlled.</p>
         <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px">
           <button type="button" data-scenario="openrouter">OpenRouter credits</button>
           <button type="button" data-scenario="firecrawl">Firecrawl credits</button>
           <button type="button" data-scenario="browserbase">Browserbase hours</button>
         </div>
-        <div id="credit-console" style="background:#111827;color:#d1d5db;border-radius:8px;padding:14px;font-family:ui-monospace,Menlo,monospace;font-size:13px;min-height:210px;max-height:360px;overflow:auto">
-          <div class="cl muted">Ready. Pick a credit surface.</div>
+        <div id="credit-console" class="event-stream">
+          <div class="event-line"><span>ready</span><b>Pick a credit provider to prepare a payment request.</b></div>
         </div>
       </div>
 
-      <div class="card">
-        <h2>Intent result</h2>
-        <div class="stat" style="margin-bottom:12px">
-          <div class="n" id="credit-amount">—</div>
-          <div class="l">Requested spend</div>
+      <div>
+        <div class="object-card">
+          <div class="object-label">Object</div>
+          <h2>ReversiblePaymentIntent</h2>
+          <div class="status-rail">
+            <div class="rail-step active"><b>Request</b><span>prepared</span></div>
+            <div class="rail-step active"><b>Review</b><span>pending</span></div>
+            <div class="rail-step"><b>Commit</b><span>held</span></div>
+          </div>
+          <div class="object-amount" id="credit-amount">—</div>
+          <div><span id="credit-status" class="status-pill">Waiting for request</span></div>
+          <div class="object-meta">
+            <div class="object-box"><span>Payee</span><b id="credit-payee">—</b></div>
+            <div class="object-box"><span>Payment</span><b id="credit-mollie">null until commit</b></div>
+            <div class="object-box"><span>Claim</span><b id="credit-claim">—</b></div>
+            <div class="object-box"><span>Audit</span><b>enabled</b></div>
+          </div>
+          <p class="pill" id="credit-summary" style="margin:14px 0 0;color:#334155">No card or payment provider key is exposed to the agent.</p>
         </div>
-        <div class="stat" style="margin-bottom:12px">
-          <div class="n" id="credit-status">Idle</div>
-          <div class="l">Review status</div>
-        </div>
-        <p class="pill" id="credit-summary" style="margin:0">No card or payment provider key is exposed to the agent.</p>
         <div class="row" style="margin-top:14px">
           <a href="/m"><button class="ghost">Review in wallet</button></a>
           <a href="/audit"><button class="ghost">Audit trail</button></a>
@@ -781,20 +820,28 @@ export const renderCreditTopupDemo = ({ account }) => {
         var amount=document.getElementById('credit-amount');
         var status=document.getElementById('credit-status');
         var summary=document.getElementById('credit-summary');
+        var payee=document.getElementById('credit-payee');
+        var claim=document.getElementById('credit-claim');
+        var mollie=document.getElementById('credit-mollie');
         var recent=document.getElementById('credit-recent');
         function esc(value){var d=document.createElement('div');d.textContent=value == null ? '' : String(value);return d.innerHTML;}
         function money(value){var n=Number(value);if(!Number.isFinite(n))return '—';return n.toFixed(2).replace('.',',')+' EUR';}
         function statusLabel(value){return value === 'pending_reversible' ? 'Pending review' : String(value || '—');}
         function line(event,detail){
           var d=document.createElement('div');
-          d.className='cl';
-          d.textContent='['+event+'] '+detail;
+          d.className='event-line';
+          var k=document.createElement('span');
+          var v=document.createElement('b');
+          k.textContent=event;
+          v.textContent=detail;
+          d.appendChild(k);
+          d.appendChild(v);
           out.appendChild(d);
           out.scrollTop=out.scrollHeight;
         }
         function addRecent(intent){
           var row=document.createElement('tr');
-          row.innerHTML='<td><span class="mono pill">'+esc(intent.intentId)+'</span></td><td>'+esc(intent.merchant)+'<div class="pill">'+esc(intent.claim)+'</div></td><td><b>'+esc(money(Number(intent.amount)))+'</b></td><td><span class="badge" style="background:#dbeafe;color:#1e40af">'+esc(statusLabel(intent.status))+'</span></td><td><span class="mono pill">'+esc(intent.molliePaymentId || 'null until commit')+'</span></td>';
+          row.innerHTML='<td><span class="mono pill">'+esc(intent.intentId)+'</span></td><td>'+esc(intent.merchant)+'<div class="pill">'+esc(intent.claim)+'</div></td><td><b>'+esc(money(Number(intent.amount)))+'</b></td><td><span class="badge" style="background:#eef2ff;color:#3730a3">'+esc(statusLabel(intent.status))+'</span></td><td><span class="mono pill">'+esc(intent.molliePaymentId || 'null until commit')+'</span></td>';
           if(recent.querySelector('.pill')) recent.innerHTML='';
           recent.prepend(row);
         }
@@ -812,8 +859,10 @@ export const renderCreditTopupDemo = ({ account }) => {
                 line('intent.created',data.intentId+' · molliePaymentId='+(data.molliePaymentId || 'null'));
                 amount.textContent=money(Number(data.amount));
                 status.textContent=statusLabel(data.status);
-                status.style.color=data.status === 'pending_reversible' ? 'var(--brand)' : 'var(--ink)';
-                summary.textContent='Payment request prepared for '+data.merchant+'. Open the wallet to review, undo, or commit. Money has not moved.';
+                payee.textContent=data.merchant || '—';
+                claim.textContent=data.claim || data.description || '—';
+                mollie.textContent=data.molliePaymentId || 'null until commit';
+                summary.textContent='Payment request prepared for '+data.merchant+'. Money has not moved.';
                 addRecent(data);
               })
               .catch(function(err){
@@ -891,7 +940,7 @@ export const manifestJson = () => JSON.stringify({
   scope: '/',
   display: 'standalone',
   background_color: '#f8fafc',
-  theme_color: '#1d4ed8',
+  theme_color: '#3448ff',
   icons: [{
     src: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%234f46e5%22/%3E%3Cpath d=%22M24 52c0-15 12-27 27-27 8 0 16 4 21 10l-8 8c-3-4-8-7-13-7-9 0-16 7-16 16s7 16 16 16c7 0 13-5 15-11h-18V46h31v5c0 17-12 28-28 28-15 0-27-12-27-27Z%22 fill=%22white%22/%3E%3C/svg%3E',
     sizes: '192x192',
@@ -925,13 +974,13 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
     .wallet-head{background:#fff;color:#111827;padding:18px 18px 20px;border-bottom:1px solid #e2e8f0}
     .wallet-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
     .wallet-brand{font-family:var(--font-display);font-size:18px;font-weight:700;letter-spacing:0}
-    .wallet-status{font-size:12px;color:#1e40af;background:#dbeafe;border:1px solid #bfdbfe;border-radius:999px;padding:5px 9px;white-space:nowrap}
+    .wallet-status{font-size:12px;color:#3730a3;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:5px 9px;white-space:nowrap}
     .mobile-hero{padding-top:22px}
     .mobile-hero h1{font-size:28px;line-height:1.08;margin:0 0 9px;color:#111827}
     .mobile-hero p{font-size:14px;color:#475569;margin:0;max-width:42ch}
     .wallet-body{padding:14px}
     .demo-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-    .demo-actions button{min-height:48px;border-radius:8px;background:#1d4ed8}
+    .demo-actions button{min-height:48px;border-radius:8px;background:#3448ff}
     .demo-actions .secondary{background:#fff;color:#111827;border:1px solid #d7dce7}
     .intent-card{border:1px solid #d9dee8;background:#fff;border-radius:8px;padding:16px;margin-bottom:12px}
     .intent-card.blocked{border-color:#fecaca;background:#fffafa}
@@ -957,6 +1006,11 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
     .toast{display:none;background:#111827;color:#fff;border-radius:8px;padding:11px 12px;margin-bottom:12px;font-size:13px}
     .verdict{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px}
     .verdict .chip{font-size:12px;padding:5px 10px}
+    .protocol-stream{border:1px solid #e5e7eb;border-radius:8px;background:#f8fafc;margin-top:13px;overflow:hidden}
+    .protocol-event{display:grid;grid-template-columns:96px 1fr;gap:8px;padding:9px 10px;border-bottom:1px solid #e5e7eb;font-size:12px}
+    .protocol-event:last-child{border-bottom:0}
+    .protocol-event span{color:#3448ff;font-family:ui-monospace,Menlo,monospace}
+    .protocol-event b{font-weight:700;color:#111827}
     @media(max-width:430px){main{padding:8px}.wallet-shell{border-radius:8px}.intent-grid,.demo-actions,.trust-rail{grid-template-columns:1fr}.intent-top{display:block}.countdown{display:inline-block;margin-top:8px}}
   </style>
   <div class="wallet-shell">
@@ -1033,6 +1087,11 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
             '<div class="intent-box"><span class="intent-label">Agent claim</span><b>'+esc(p.claim || '-')+'</b></div>'+
           '</div>'+
           verdict(p.verifier)+
+          '<div class="protocol-stream">'+
+            '<div class="protocol-event"><span>agent</span><b>Payment request prepared</b></div>'+
+            '<div class="protocol-event"><span>policy</span><b>Amount and provider checked</b></div>'+
+            '<div class="protocol-event"><span>wallet</span><b>Awaiting review before settlement</b></div>'+
+          '</div>'+
           '<div class="null-id">molliePaymentId: <b>'+esc(p.molliePaymentId === null ? 'null until commit' : p.molliePaymentId)+'</b></div>'+
           actions+
         '</article>';
