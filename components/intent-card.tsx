@@ -26,7 +26,7 @@ export function IntentCard({ intent }: { intent: ReversiblePaymentIntent }) {
   return (
     <section className="rounded-[8px] border border-border bg-card p-5 sm:p-6">
       <div className="mb-4 flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-accent/15 text-accent">
+        <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-muted text-primary">
           <FileLock2 className="h-4.5 w-4.5" aria-hidden="true" />
         </div>
         <div>
@@ -35,7 +35,7 @@ export function IntentCard({ intent }: { intent: ReversiblePaymentIntent }) {
         </div>
       </div>
 
-      <div className="rounded-[8px] border border-border bg-background/50 px-4">
+      <div className="rounded-[8px] border border-border bg-muted px-4">
         <Row label="intentId">
           <span className="font-mono text-foreground">{intent.intentId}</span>
         </Row>

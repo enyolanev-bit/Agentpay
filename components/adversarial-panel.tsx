@@ -24,7 +24,7 @@ export function AdversarialPanel() {
       <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-2">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Agent request</p>
-          <div className="mt-2 rounded-[8px] border border-danger/30 bg-background/60 p-3">
+          <div className="mt-2 rounded-[8px] border border-danger/30 bg-danger/[0.04] p-3">
             <p className="font-mono text-sm text-foreground text-pretty">
               &quot;{adversarialIntent.description}&quot;
             </p>
@@ -48,13 +48,13 @@ export function AdversarialPanel() {
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between gap-3 rounded-[8px] border border-border bg-background/50 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-[8px] border border-border bg-muted px-3 py-2.5">
             <span className="font-mono text-xs text-muted-foreground">policyDecision</span>
             <PolicyBadge decision={adversarialIntent.policyDecision} />
           </div>
           <p className="-mt-1.5 text-xs text-muted-foreground">{adversarialIntent.policyReason}</p>
 
-          <div className="flex items-center justify-between gap-3 rounded-[8px] border border-border bg-background/50 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3 rounded-[8px] border border-border bg-muted px-3 py-2.5">
             <span className="font-mono text-xs text-muted-foreground">verifierVerdict</span>
             <VerifierBadge verdict={adversarialIntent.verifierVerdict} />
           </div>
@@ -64,7 +64,7 @@ export function AdversarialPanel() {
             <span className="font-mono text-xs text-muted-foreground">status</span>
             <StatusBadge status={adversarialIntent.status} />
           </div>
-          <div className="flex items-center justify-between gap-3 rounded-[8px] border border-border bg-background/50 px-3 py-2.5 font-mono text-xs">
+          <div className="flex items-center justify-between gap-3 rounded-[8px] border border-border bg-muted px-3 py-2.5 font-mono text-xs">
             <span className="text-muted-foreground">molliePaymentId</span>
             <span className="text-danger">null · money not moved</span>
           </div>

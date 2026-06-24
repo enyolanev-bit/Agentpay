@@ -99,7 +99,7 @@ export function ProtocolFlow() {
       </div>
 
       {/* molliePaymentId field */}
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[8px] border border-border bg-background/60 px-4 py-3 font-mono text-sm">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[8px] border border-border bg-muted px-4 py-3 font-mono text-sm">
         <span className="text-muted-foreground">molliePaymentId</span>
         <span className="flex items-center gap-2">
           <span className="text-danger">null</span>

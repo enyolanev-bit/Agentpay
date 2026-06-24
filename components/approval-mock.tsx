@@ -15,7 +15,7 @@ export function ApprovalMock() {
       </p>
 
       <div className="mx-auto w-full max-w-[300px]">
-        <div className="rounded-[28px] border border-border bg-background p-2.5 shadow-2xl">
+        <div className="rounded-[28px] border border-border bg-muted p-2.5 shadow-sm">
           <div className="overflow-hidden rounded-[20px] border border-border bg-card">
             {/* phone status bar */}
             <div className="flex items-center justify-between px-4 py-2 text-[11px] text-muted-foreground">

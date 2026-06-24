@@ -2,7 +2,7 @@ import { ShieldCheck, Plus, UserCheck } from "lucide-react"
 
 export function DashboardHeader() {
   return (
-    <header className="border-b border-border bg-card/40 backdrop-blur">
+    <header className="border-b border-border bg-card">
       <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6 md:flex-row md:items-center md:justify-between md:py-6">
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] bg-primary text-primary-foreground">
