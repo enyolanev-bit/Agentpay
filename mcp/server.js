@@ -8,6 +8,26 @@ let buffer = Buffer.alloc(0);
 
 const tools = [
   {
+    name: 'agentpay.prepare_payment',
+    description: 'Prepare a payment before money moves. Prefer provider for server-owned prices; use amountCents only from deterministic application code.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        provider: { type: 'string', description: 'Deterministic credit provider, for example "openrouter". If set, AgentPay owns the amount.' },
+        runId: { type: 'string', description: 'Optional agent run id used to derive an idempotency key.' },
+        payee: { type: 'string', description: 'Payee or merchant for app-owned generic intents.' },
+        amountCents: { type: 'integer', description: 'Positive integer cents. Do not let the LLM invent this value.' },
+        currency: { type: 'string', default: 'EUR' },
+        reason: { type: 'string', description: 'Why the agent needs this payment.' },
+        description: { type: 'string', description: 'Optional payment description. Defaults to reason.' },
+        claim: { type: 'string', description: 'Optional agent claim. Defaults to description.' },
+        token: { type: 'string', description: 'Optional AgentPay agent token. Defaults to AGENTPAY_AGENT_TOKEN.' },
+        idempotencyKey: { type: 'string', description: 'Optional idempotency key for safe retries.' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'agentpay.create_reversible_intent',
     description: 'Create a ReversiblePaymentIntent. Money does not move until confirm or auto-commit.',
     inputSchema: {
@@ -163,8 +183,56 @@ const requireToken = (args) => {
   throw new Error('Missing agent token. Set AGENTPAY_AGENT_TOKEN or pass token.');
 };
 
+const normalizeKeyPart = (value) => String(value ?? '').trim().toLowerCase();
+
+const idempotencyKeyForRun = ({ runId, provider }) => {
+  if (!runId) return undefined;
+  return `agentpay:${runId}:credits:${normalizeKeyPart(provider)}`;
+};
+
+const idempotencyKeyForPayment = ({ runId, payee }) => {
+  if (!runId) return undefined;
+  return `agentpay:${runId}:payment:${normalizeKeyPart(payee)}`;
+};
+
+const centsToDecimalString = (amountCents) => {
+  if (!Number.isSafeInteger(amountCents) || amountCents <= 0) {
+    throw new Error('amountCents must be a positive safe integer.');
+  }
+  const euros = Math.trunc(amountCents / 100);
+  const cents = String(amountCents % 100).padStart(2, '0');
+  return `${euros}.${cents}`;
+};
+
 const callTool = async (name, args = {}) => {
   switch (name) {
+    case 'agentpay.prepare_payment':
+      requireToken(args);
+      if (args.provider) {
+        if (args.amountCents !== undefined) {
+          throw new Error('amountCents is not accepted when provider is used; AgentPay resolves provider prices server-side.');
+        }
+        return httpJson('/agent/credit-topup', {
+          method: 'POST',
+          token: args.token,
+          idempotencyKey: args.idempotencyKey ?? idempotencyKeyForRun({ runId: args.runId, provider: args.provider }),
+          body: { provider: args.provider },
+        });
+      }
+      if (!args.payee) throw new Error('payee is required when provider is not used.');
+      if (!args.reason && !args.description) throw new Error('reason is required when provider is not used.');
+      return httpJson('/agent/pay-reversible', {
+        method: 'POST',
+        token: args.token,
+        idempotencyKey: args.idempotencyKey ?? idempotencyKeyForPayment({ runId: args.runId, payee: args.payee }),
+        body: {
+          amount: centsToDecimalString(args.amountCents),
+          currency: args.currency ?? 'EUR',
+          merchant: args.payee,
+          description: args.description ?? args.reason,
+          claim: args.claim ?? args.description ?? args.reason,
+        },
+      });
     case 'agentpay.create_reversible_intent':
       requireToken(args);
       return httpJson('/agent/pay-reversible', {

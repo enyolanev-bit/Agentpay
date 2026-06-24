@@ -12,6 +12,7 @@
     "dev": "node --watch server.js",
     "mcp": "node mcp/server.js",
     "example:agent": "node examples/node-agent/agent.js",
+    "example:prepare-payment": "node examples/node-agent/prepare-payment.js",
     "audit:publish": "node scripts/audit-publication.js",
     "test": "node --test"
   },

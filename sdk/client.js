@@ -24,6 +24,44 @@ export class AgentPayClient {
     });
   }
 
+  async preparePayment({
+    provider,
+    runId,
+    payee,
+    amountCents,
+    currency = 'EUR',
+    reason,
+    description,
+    claim,
+    token,
+    idempotencyKey,
+  } = {}) {
+    if (provider) {
+      if (amountCents !== undefined) {
+        throw new AgentPayError('amountCents is not accepted when provider is used; AgentPay resolves provider prices server-side.');
+      }
+      return this.createCreditTopupIntent({
+        provider,
+        token,
+        idempotencyKey: idempotencyKey ?? idempotencyKeyForRun({ runId, provider }),
+      });
+    }
+
+    if (!payee) throw new AgentPayError('payee is required when provider is not used.');
+    if (!reason && !description) throw new AgentPayError('reason is required when provider is not used.');
+
+    const resolvedDescription = description ?? reason;
+    return this.createReversibleIntent({
+      amount: centsToDecimalString(amountCents),
+      currency,
+      merchant: payee,
+      description: resolvedDescription,
+      claim: claim ?? resolvedDescription,
+      token,
+      idempotencyKey: idempotencyKey ?? idempotencyKeyForPayment({ runId, payee }),
+    });
+  }
+
   async listCreditTopupProviders() {
     return this.#json('/agent/credit-topups');
   }
@@ -143,6 +181,20 @@ const parseJson = (text) => {
 const idempotencyKeyForRun = ({ runId, provider }) => {
   if (!runId) return undefined;
   return `agentpay:${runId}:credits:${normalizeProvider(provider)}`;
+};
+
+const idempotencyKeyForPayment = ({ runId, payee }) => {
+  if (!runId) return undefined;
+  return `agentpay:${runId}:payment:${normalizeProvider(payee)}`;
+};
+
+const centsToDecimalString = (amountCents) => {
+  if (!Number.isSafeInteger(amountCents) || amountCents <= 0) {
+    throw new AgentPayError('amountCents must be a positive safe integer.');
+  }
+  const euros = Math.trunc(amountCents / 100);
+  const cents = String(amountCents % 100).padStart(2, '0');
+  return `${euros}.${cents}`;
 };
 
 const normalizeProvider = (provider) => String(provider ?? '').trim().toLowerCase();

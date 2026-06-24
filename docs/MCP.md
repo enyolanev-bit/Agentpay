@@ -31,8 +31,12 @@ curl http://localhost:3000/api/demo-token
 
 ## Tools
 
+Use `agentpay.prepare_payment` whenever an agent needs to spend money. Prefer
+the provider path so AgentPay owns the price server-side.
+
 | Tool | Purpose |
 |---|---|
+| `agentpay.prepare_payment` | Prepare a payment before money moves. Provider-based calls keep amount server-owned. |
 | `agentpay.create_reversible_intent` | Prepare a payment without moving money. |
 | `agentpay.list_pending_intents` | List pending reversible intents. |
 | `agentpay.undo_intent` | Cancel a reversible intent before capture. |
@@ -44,19 +48,32 @@ curl http://localhost:3000/api/demo-token
 
 ```json
 {
-  "name": "agentpay.create_reversible_intent",
+  "name": "agentpay.prepare_payment",
   "arguments": {
-    "amount": "18.00",
-    "currency": "EUR",
-    "merchant": "Bookstore",
-    "description": "a book for personal growth",
-    "claim": "a book to help the user grow",
-    "idempotencyKey": "agent-run-123"
+    "provider": "openrouter",
+    "runId": "agent-run-123"
   }
 }
 ```
 
-Expected result: a `ReversiblePaymentIntent` with `molliePaymentId:null`.
+Expected result: a prepared intent with `molliePaymentId:null`.
+
+For app-owned generic amounts, pass integer `amountCents` from deterministic
+application code:
+
+```json
+{
+  "name": "agentpay.prepare_payment",
+  "arguments": {
+    "payee": "Bookstore",
+    "amountCents": 1800,
+    "reason": "a book for personal growth",
+    "runId": "agent-run-456"
+  }
+}
+```
+
+Do not ask the LLM to invent `amountCents`.
 
 ## Safety
 

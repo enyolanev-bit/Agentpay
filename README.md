@@ -84,6 +84,8 @@ Run the full demo:
 
 ## JavaScript SDK
 
+Use AgentPay whenever an agent needs to spend money:
+
 ```js
 import { AgentPayClient } from 'agentpay';
 
@@ -92,6 +94,19 @@ const agentpay = new AgentPayClient({
   agentToken: process.env.AGENTPAY_AGENT_TOKEN,
 });
 
+const intent = await agentpay.preparePayment({
+  provider: 'openrouter',
+  runId: 'agent-run-123',
+});
+
+console.log(intent.intentId); // prepared payment intent id
+console.log(intent.molliePaymentId); // null until review, undo, or commit
+```
+
+The recommended path is provider-based: the agent chooses what it needs, while
+AgentPay owns price, merchant, policy, review, undo, and audit.
+
+```js
 const options = await agentpay.listSpendOptions();
 const openrouter = await agentpay.quoteCredits({ provider: 'openrouter' });
 const plan = await agentpay.planCreditSpend({
@@ -99,7 +114,7 @@ const plan = await agentpay.planCreditSpend({
   runId: 'agent-run-123',
 });
 
-const intent = await agentpay.buyCredits({
+const creditIntent = await agentpay.buyCredits({
   provider: 'openrouter',
   runId: 'agent-run-123',
 });
@@ -108,16 +123,20 @@ console.log(options.providers.map((option) => option.provider));
 console.log(openrouter.spendType);
 console.log(openrouter.amount); // deterministic, server-owned amount
 console.log(plan.moneyMovement); // none_until_confirm_or_commit
-console.log(intent.molliePaymentId); // null until commit
+console.log(creditIntent.molliePaymentId); // null until commit
 ```
 
-`buyCredits()` is the agent-first path: the agent chooses a provider, while
-AgentPay owns the deterministic price, merchant, claim, policy, undo window, and
-audit trail. `planCreditSpend()` gives agent runtimes a no-money-moved preflight
-object with the deterministic amount, spend type, claim, and idempotency
-key for a run.
+`preparePayment()` is the agent-first entrypoint. With `provider`, it prepares a
+server-priced credit spend. For generic app-owned amounts, pass integer
+`amountCents` from deterministic application code, not from the LLM.
+`planCreditSpend()` gives agent runtimes a no-money-moved preflight object with
+the deterministic amount, spend type, claim, and idempotency key for a run.
 
-SDK docs: [`sdk/README.md`](sdk/README.md). Runnable example: [`examples/node-agent/agent.js`](examples/node-agent/agent.js).
+SDK docs: [`sdk/README.md`](sdk/README.md). Runnable examples:
+[`examples/node-agent/prepare-payment.js`](examples/node-agent/prepare-payment.js)
+and [`examples/node-agent/agent.js`](examples/node-agent/agent.js). Agent runtime
+notes: [`examples/openai-agent/README.md`](examples/openai-agent/README.md) and
+[`examples/mcp-client/README.md`](examples/mcp-client/README.md).
 
 ## Agent API
 
@@ -174,6 +193,7 @@ curl -X POST http://localhost:3000/agent/pay-agent \
 
 AgentPay exposes the same trust layer through MCP so agents can request payment permissions naturally:
 
+- `agentpay.prepare_payment`
 - `agentpay.create_reversible_intent`
 - `agentpay.list_pending_intents`
 - `agentpay.undo_intent`
