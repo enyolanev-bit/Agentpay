@@ -359,6 +359,45 @@ test('planCreditSpend uses authenticated policy preview when an agent token is a
   assert.deepEqual(JSON.parse(calls[0].init.body), { provider: 'OpenRouter' });
 });
 
+test('listCreditSpendPlans fetches authenticated policy previews for all providers', async () => {
+  const calls = [];
+  const client = new AgentPayClient({
+    baseUrl: 'http://agentpay.test',
+    agentToken: 'tok_demo',
+    fetch: async (url, init) => {
+      calls.push({ url: String(url), init });
+      return response({
+        type: 'CreditSpendPlanList',
+        plans: [
+          {
+            type: 'CreditSpendPlan',
+            provider: 'openrouter',
+            amount: '25.00',
+            spendType: 'inference_credits',
+            policy: { decision: 'AUTO_APPROVE', reasons: ['within budget'] },
+            budget: { remainingTodayAfter: '75.00' },
+            nextAction: 'buyCredits',
+            moneyMovement: 'none_until_buy_credits_then_confirm_or_commit',
+            molliePaymentId: null,
+          },
+        ],
+        buyableProviders: ['openrouter'],
+        moneyMovement: 'none_until_buy_credits_then_confirm_or_commit',
+      });
+    },
+  });
+
+  const catalog = await client.listCreditSpendPlans();
+
+  assert.equal(catalog.type, 'CreditSpendPlanList');
+  assert.equal(catalog.plans[0].provider, 'openrouter');
+  assert.equal(catalog.plans[0].policy.decision, 'AUTO_APPROVE');
+  assert.equal(catalog.buyableProviders[0], 'openrouter');
+  assert.equal(calls[0].url, 'http://agentpay.test/agent/credit-plans');
+  assert.equal(calls[0].init.method, 'GET');
+  assert.equal(calls[0].init.headers.Authorization, 'Bearer tok_demo');
+});
+
 test('previewCreditSpend requires a provider', async () => {
   const client = new AgentPayClient({ fetch: async () => response({}) });
 

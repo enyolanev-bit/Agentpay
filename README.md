@@ -121,6 +121,7 @@ AgentPay owns price, merchant, policy, review, undo, and audit.
 
 ```js
 const options = await agentpay.listSpendOptions();
+const plans = await agentpay.listCreditSpendPlans();
 const openrouter = await agentpay.quoteCredits({ provider: 'openrouter' });
 const plan = await agentpay.planCreditSpend({
   provider: 'openrouter',
@@ -133,6 +134,7 @@ const creditIntent = await agentpay.buyCredits({
 });
 
 console.log(options.providers.map((option) => option.provider));
+console.log(plans.buyableProviders);
 console.log(openrouter.spendType);
 console.log(openrouter.amount); // deterministic, server-owned amount
 console.log(plan.policy?.decision); // returned when authenticated
@@ -146,6 +148,8 @@ server-priced credit spend. For generic app-owned amounts, pass integer
 `planCreditSpend()` gives agent runtimes a no-money-moved preflight object with
 the deterministic amount, spend type, claim, idempotency key, and authenticated
 policy budget preview when an agent token is available.
+`listCreditSpendPlans()` returns those policy previews for the full catalog so
+agents can select an allowed provider before creating an intent.
 
 SDK docs: [`sdk/README.md`](sdk/README.md). Runnable examples:
 [`examples/node-agent/prepare-payment.js`](examples/node-agent/prepare-payment.js)

@@ -97,6 +97,10 @@ export class AgentPayClient {
     });
   }
 
+  async listCreditSpendPlans({ token } = {}) {
+    return this.#json('/agent/credit-plans', { token });
+  }
+
   async quoteCredits({ provider } = {}) {
     if (!provider) throw new AgentPayError('provider is required.');
     const catalog = await this.listSpendOptions();

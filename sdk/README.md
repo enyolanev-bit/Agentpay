@@ -31,6 +31,7 @@ undo, and audit from server-side code.
 
 ```js
 const spendOptions = await agentpay.listSpendOptions();
+const spendPlans = await agentpay.listCreditSpendPlans();
 const option = await agentpay.quoteCredits({ provider: 'openrouter' });
 const plan = await agentpay.planCreditSpend({
   provider: 'openrouter',
@@ -43,6 +44,7 @@ const intent = await agentpay.buyCredits({
 });
 
 console.log(option.spendType);
+console.log(spendPlans.buyableProviders);
 console.log(option.amount); // deterministic, server-owned amount
 console.log(plan.policy?.decision); // returned when authenticated
 console.log(plan.moneyMovement); // none_until_buy_credits_then_confirm_or_commit
@@ -57,6 +59,8 @@ top-up is before preparing an intent.
 an agent token, then wraps the result with the deterministic idempotency key for
 a run. Without a token, it falls back to the public catalog quote. In both cases
 no money moves at the planning step.
+`listCreditSpendPlans()` returns the same authenticated preflight for every
+provider so an agent can choose a buyable option without trial-and-error.
 
 Lower-level reversible intent for app-owned amounts:
 
@@ -85,6 +89,7 @@ invent amounts.
 - `listSpendOptions()`
 - `quoteCredits({ provider })`
 - `previewCreditSpend({ provider })`
+- `listCreditSpendPlans()`
 - `planCreditSpend({ provider, runId })`
 - `buyCredits({ provider, runId })`
 - `listPendingIntents()`

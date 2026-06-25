@@ -251,6 +251,21 @@ app.post('/agent/credit-plan', (req, res) => {
   res.json(creditSpendPlanDto({ agent, scenario }));
 });
 
+app.get('/agent/credit-plans', (req, res) => {
+  const agent = requireAgent(req, res);
+  if (!agent) return;
+
+  const plans = creditTopupProviders().map((scenario) => creditSpendPlanDto({ agent, scenario }));
+  res.json({
+    type: 'CreditSpendPlanList',
+    plans,
+    buyableProviders: plans
+      .filter((plan) => plan.nextAction === 'buyCredits')
+      .map((plan) => plan.provider),
+    moneyMovement: 'none_until_buy_credits_then_confirm_or_commit',
+  });
+});
+
 app.post('/agent/credit-topup', async (req, res) => {
   const agent = requireAgent(req, res);
   if (!agent) return;

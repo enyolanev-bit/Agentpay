@@ -205,6 +205,44 @@ Response:
 }
 ```
 
+Authenticated full-catalog policy preflight:
+
+```http
+GET /agent/credit-plans
+Authorization: Bearer <AGENT_TOKEN>
+```
+
+Response:
+
+```json
+{
+  "type": "CreditSpendPlanList",
+  "plans": [
+    {
+      "type": "CreditSpendPlan",
+      "provider": "openrouter",
+      "amount": "25.00",
+      "currency": "EUR",
+      "merchant": "OpenRouter",
+      "spendType": "inference_credits",
+      "policy": {
+        "decision": "AUTO_APPROVE",
+        "reasons": ["Dans la policy"]
+      },
+      "budget": {
+        "remainingTodayBefore": "100.00",
+        "remainingTodayAfter": "75.00"
+      },
+      "nextAction": "buyCredits",
+      "moneyMovement": "none_until_buy_credits_then_confirm_or_commit",
+      "molliePaymentId": null
+    }
+  ],
+  "buyableProviders": ["openrouter"],
+  "moneyMovement": "none_until_buy_credits_then_confirm_or_commit"
+}
+```
+
 ```http
 POST /agent/credit-topup
 ```
