@@ -14,8 +14,9 @@ import {
   createAccount, getAccount, getAccountByCustomer, updatePayment,
   createAgent, getAgent, findAgentByToken, findAgentByHandleOrId, agentsForAccount, providersForAccount,
   toCents, addAudit, auditLog, getPaymentByMollieId, pendingHumanPayments, pendingReversiblePayments, getPayment,
-  loadStore, policyTemplateIds,
+  loadStore, policyTemplateIds, todaySpentCents,
 } from './store.js';
+import { decide } from './policy.js';
 import { createCustomer, createFirstPayment, getValidMandate, getMolliePayment } from './mollie.js';
 import {
   requestPayment, requestReversiblePayment, cancelPayment, confirmPayment,
@@ -67,6 +68,54 @@ const reversibleIntentDto = (payment) => ({
 const demoPayerAgent = () => {
   const agents = agentsForAccount(currentAccountId);
   return agents.find((a) => a.role === 'payer') ?? agents[0] ?? null;
+};
+
+const requireAgent = (req, res) => {
+  const auth = req.headers.authorization ?? '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : (req.body.token ?? '');
+  const agent = findAgentByToken(token);
+  if (!agent) res.status(401).json({ error: 'token agent invalide' });
+  return agent;
+};
+
+const creditSpendPlanDto = ({ agent, scenario }) => {
+  const spentTodayCents = todaySpentCents(agent.id);
+  const remainingTodayCents = Math.max(0, agent.policy.maxPerDayCents - spentTodayCents);
+  const remainingAfterCents = Math.max(0, remainingTodayCents - scenario.amountCents);
+  const policy = decide(agent, {
+    amountCents: scenario.amountCents,
+    currency: scenario.currency,
+    merchant: scenario.merchant,
+    description: scenario.description,
+    category: 'credits',
+    claim: scenario.claim,
+    agentName: agent.name,
+  });
+
+  return {
+    type: 'CreditSpendPlan',
+    provider: scenario.provider,
+    amount: (scenario.amountCents / 100).toFixed(2),
+    currency: scenario.currency,
+    merchant: scenario.merchant,
+    spendType: scenario.spendType,
+    description: scenario.description,
+    claim: scenario.claim,
+    reason: scenario.reason,
+    policy,
+    budget: {
+      maxPerTx: (agent.policy.maxPerTxCents / 100).toFixed(2),
+      maxPerDay: (agent.policy.maxPerDayCents / 100).toFixed(2),
+      approvalThreshold: (agent.policy.approvalThresholdCents / 100).toFixed(2),
+      spentToday: (spentTodayCents / 100).toFixed(2),
+      remainingTodayBefore: (remainingTodayCents / 100).toFixed(2),
+      remainingTodayAfter: (remainingAfterCents / 100).toFixed(2),
+      allowedMerchants: agent.policy.allowedMerchants,
+    },
+    nextAction: policy.decision === 'REJECTED' ? 'choose_another_provider_or_policy' : 'buyCredits',
+    moneyMovement: 'none_until_buy_credits_then_confirm_or_commit',
+    molliePaymentId: null,
+  };
 };
 
 // --- UI -------------------------------------------------------------------
@@ -186,11 +235,25 @@ app.get('/agent/credit-topups', (req, res) => {
   });
 });
 
+app.post('/agent/credit-plan', (req, res) => {
+  const agent = requireAgent(req, res);
+  if (!agent) return;
+
+  const provider = String(req.body.provider ?? req.body.scenario ?? '').trim().toLowerCase();
+  const scenario = getCreditTopupScenario(provider);
+  if (!scenario) {
+    return res.status(400).json({
+      error: 'provider credit inconnu',
+      allowedProviders: creditTopupProviders().map((item) => item.provider),
+    });
+  }
+
+  res.json(creditSpendPlanDto({ agent, scenario }));
+});
+
 app.post('/agent/credit-topup', async (req, res) => {
-  const auth = req.headers.authorization ?? '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : (req.body.token ?? '');
-  const agent = findAgentByToken(token);
-  if (!agent) return res.status(401).json({ error: 'token agent invalide' });
+  const agent = requireAgent(req, res);
+  if (!agent) return;
 
   const provider = String(req.body.provider ?? req.body.scenario ?? '').trim().toLowerCase();
   const scenario = getCreditTopupScenario(provider);

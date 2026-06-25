@@ -163,6 +163,48 @@ Response:
 }
 ```
 
+Authenticated no-money-moved policy preflight:
+
+```http
+POST /agent/credit-plan
+Authorization: Bearer <AGENT_TOKEN>
+```
+
+```json
+{
+  "provider": "openrouter"
+}
+```
+
+Response:
+
+```json
+{
+  "type": "CreditSpendPlan",
+  "provider": "openrouter",
+  "amount": "25.00",
+  "currency": "EUR",
+  "merchant": "OpenRouter",
+  "spendType": "inference_credits",
+  "policy": {
+    "decision": "AUTO_APPROVE",
+    "reasons": ["Dans la policy"]
+  },
+  "budget": {
+    "maxPerTx": "25.00",
+    "maxPerDay": "100.00",
+    "approvalThreshold": "15.00",
+    "spentToday": "0.00",
+    "remainingTodayBefore": "100.00",
+    "remainingTodayAfter": "75.00",
+    "allowedMerchants": ["OpenRouter"]
+  },
+  "nextAction": "buyCredits",
+  "moneyMovement": "none_until_buy_credits_then_confirm_or_commit",
+  "molliePaymentId": null
+}
+```
+
 ```http
 POST /agent/credit-topup
 ```

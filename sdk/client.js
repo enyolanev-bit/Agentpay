@@ -88,6 +88,15 @@ export class AgentPayClient {
     });
   }
 
+  async previewCreditSpend({ provider, token } = {}) {
+    if (!provider) throw new AgentPayError('provider is required.');
+    return this.#json('/agent/credit-plan', {
+      method: 'POST',
+      token,
+      body: { provider },
+    });
+  }
+
   async quoteCredits({ provider } = {}) {
     if (!provider) throw new AgentPayError('provider is required.');
     const catalog = await this.listSpendOptions();
@@ -102,7 +111,16 @@ export class AgentPayClient {
     return option;
   }
 
-  async planCreditSpend({ provider, runId } = {}) {
+  async planCreditSpend({ provider, runId, token } = {}) {
+    const effectiveToken = token ?? this.agentToken;
+    if (effectiveToken) {
+      const plan = await this.previewCreditSpend({ provider, token: effectiveToken });
+      return {
+        ...plan,
+        idempotencyKey: idempotencyKeyForRun({ runId, provider: plan.provider }),
+      };
+    }
+
     const option = await this.quoteCredits({ provider });
     return {
       type: 'CreditSpendPlan',

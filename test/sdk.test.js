@@ -316,6 +316,62 @@ test('planCreditSpend returns a no-money-moved spend plan for an agent run', asy
   assert.equal(plan.molliePaymentId, null);
 });
 
+test('planCreditSpend uses authenticated policy preview when an agent token is available', async () => {
+  const calls = [];
+  const client = new AgentPayClient({
+    baseUrl: 'http://agentpay.test',
+    agentToken: 'tok_demo',
+    fetch: async (url, init) => {
+      calls.push({ url: String(url), init });
+      return response({
+        type: 'CreditSpendPlan',
+        provider: 'openrouter',
+        amount: '25.00',
+        currency: 'EUR',
+        merchant: 'OpenRouter',
+        spendType: 'inference_credits',
+        policy: { decision: 'AUTO_APPROVE', reasons: ['within budget'] },
+        budget: {
+          maxPerTx: '25.00',
+          maxPerDay: '100.00',
+          approvalThreshold: '15.00',
+          spentToday: '0.00',
+          remainingTodayBefore: '100.00',
+          remainingTodayAfter: '75.00',
+          allowedMerchants: ['OpenRouter'],
+        },
+        nextAction: 'buyCredits',
+        moneyMovement: 'none_until_buy_credits_then_confirm_or_commit',
+        molliePaymentId: null,
+      });
+    },
+  });
+
+  const plan = await client.planCreditSpend({ provider: 'OpenRouter', runId: 'run-999' });
+
+  assert.equal(plan.provider, 'openrouter');
+  assert.equal(plan.policy.decision, 'AUTO_APPROVE');
+  assert.equal(plan.budget.remainingTodayAfter, '75.00');
+  assert.equal(plan.idempotencyKey, 'agentpay:run-999:credits:openrouter');
+  assert.equal(calls[0].url, 'http://agentpay.test/agent/credit-plan');
+  assert.equal(calls[0].init.method, 'POST');
+  assert.equal(calls[0].init.headers.Authorization, 'Bearer tok_demo');
+  assert.deepEqual(JSON.parse(calls[0].init.body), { provider: 'OpenRouter' });
+});
+
+test('previewCreditSpend requires a provider', async () => {
+  const client = new AgentPayClient({ fetch: async () => response({}) });
+
+  await assert.rejects(
+    () => client.previewCreditSpend(),
+    (err) => {
+      assert.ok(err instanceof AgentPayError);
+      assert.equal(err.message, 'provider is required.');
+      return true;
+    },
+  );
+});
+
 test('buyCredits requires a provider', async () => {
   const client = new AgentPayClient({ fetch: async () => response({}) });
 

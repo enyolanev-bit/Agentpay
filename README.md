@@ -135,7 +135,8 @@ const creditIntent = await agentpay.buyCredits({
 console.log(options.providers.map((option) => option.provider));
 console.log(openrouter.spendType);
 console.log(openrouter.amount); // deterministic, server-owned amount
-console.log(plan.moneyMovement); // none_until_confirm_or_commit
+console.log(plan.policy?.decision); // returned when authenticated
+console.log(plan.moneyMovement); // none_until_buy_credits_then_confirm_or_commit
 console.log(creditIntent.molliePaymentId); // null until commit
 ```
 
@@ -143,7 +144,8 @@ console.log(creditIntent.molliePaymentId); // null until commit
 server-priced credit spend. For generic app-owned amounts, pass integer
 `amountCents` from deterministic application code, not from the LLM.
 `planCreditSpend()` gives agent runtimes a no-money-moved preflight object with
-the deterministic amount, spend type, claim, and idempotency key for a run.
+the deterministic amount, spend type, claim, idempotency key, and authenticated
+policy budget preview when an agent token is available.
 
 SDK docs: [`sdk/README.md`](sdk/README.md). Runnable examples:
 [`examples/node-agent/prepare-payment.js`](examples/node-agent/prepare-payment.js)

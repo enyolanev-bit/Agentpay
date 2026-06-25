@@ -44,7 +44,8 @@ const intent = await agentpay.buyCredits({
 
 console.log(option.spendType);
 console.log(option.amount); // deterministic, server-owned amount
-console.log(plan.moneyMovement); // none_until_confirm_or_commit
+console.log(plan.policy?.decision); // returned when authenticated
+console.log(plan.moneyMovement); // none_until_buy_credits_then_confirm_or_commit
 console.log(intent.molliePaymentId); // null until commit
 ```
 
@@ -52,8 +53,10 @@ The agent sends only `provider`. AgentPay resolves amount, merchant, claim,
 policy, verifier, undo, and audit from server-side code. The catalog also
 returns the spend type, description, and claim so an agent UI can show what a
 top-up is before preparing an intent.
-`planCreditSpend()` wraps that quote with the deterministic idempotency key for
-a run and confirms that no money moves at the planning step.
+`planCreditSpend()` calls the authenticated policy preflight when the client has
+an agent token, then wraps the result with the deterministic idempotency key for
+a run. Without a token, it falls back to the public catalog quote. In both cases
+no money moves at the planning step.
 
 Lower-level reversible intent for app-owned amounts:
 
@@ -81,6 +84,7 @@ invent amounts.
 - `createCreditTopupIntent({ provider })`
 - `listSpendOptions()`
 - `quoteCredits({ provider })`
+- `previewCreditSpend({ provider })`
 - `planCreditSpend({ provider, runId })`
 - `buyCredits({ provider, runId })`
 - `listPendingIntents()`
