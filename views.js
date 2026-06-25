@@ -1359,6 +1359,7 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
     .intent-box b{display:block;font-size:13px;overflow-wrap:anywhere}
     .intent-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
     .intent-actions button{width:100%;min-height:46px;border-radius:8px}
+    .intent-actions button:disabled{opacity:.82;cursor:not-allowed}
     .intent-actions .danger{background:#ef4444}
     .countdown{font-size:13px;font-weight:800;color:#3730a3;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:6px 10px;white-space:nowrap}
     .null-id{font-size:12px;color:#374151;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:10px;margin-top:12px}
@@ -1420,6 +1421,8 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
       var empty=document.getElementById('empty');
       var toast=document.getElementById('toast');
       var demoButtons=[].slice.call(document.querySelectorAll('.demo-actions button'));
+      var preparedIntents={};
+      var terminalIntents={};
       function esc(value){var d=document.createElement('div');d.textContent=value == null ? '' : String(value);return d.innerHTML;}
       function seconds(ms){return Math.max(0,Math.ceil((Number(ms)-Date.now())/1000));}
       function setButtons(disabled){demoButtons.forEach(function(btn){btn.disabled=disabled;});}
@@ -1447,6 +1450,7 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
           .then(function(r){return r.json();})
           .then(function(data){
             if(data.error){showToast(data.error,'block');return;}
+            preparedIntents[data.intentId]=data;
             showToast('ReversiblePaymentIntent created. Money has not moved.','ok');
             refreshOnce();
             waitForIntent(data.intentId,scenario,0);
@@ -1456,10 +1460,13 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
       };
       function card(p){
         var blocked=p.verifier && p.verifier.allow===false;
+        var blockedFinal=p.status==='blocked_by_verifier';
         var allowed=p.verifier && p.verifier.allow===true;
         var topRight=blocked?'<div class="blocked-stamp">Blocked by verifier</div>':'<div class="countdown">'+seconds(p.commitAfterMs)+'s left</div>';
         var actions=blocked
-          ? '<div class="intent-actions" style="grid-template-columns:1fr"><button class="danger" onclick="act(\\''+esc(p.intentId)+'\\',\\'undo\\')">Undo</button></div>'
+          ? (blockedFinal
+            ? '<div class="intent-actions" style="grid-template-columns:1fr"><button class="danger" disabled>Blocked before commit</button></div>'
+            : '<div class="intent-actions" style="grid-template-columns:1fr"><button class="danger" onclick="act(\\''+esc(p.intentId)+'\\',\\'undo\\')">Undo</button></div>')
           : '<div class="intent-actions"><button class="danger" onclick="act(\\''+esc(p.intentId)+'\\',\\'undo\\')">Undo</button><button onclick="act(\\''+esc(p.intentId)+'\\',\\'confirm\\')">Commit</button></div>';
         return '<article class="intent-card '+(blocked?'blocked':allowed?'allowed':'')+'">'+
           '<div class="intent-top"><div><div class="object-label">Object · ReversiblePaymentIntent</div><div class="mono pill">'+esc(p.intentId)+'</div></div>'+topRight+'</div>'+
@@ -1479,8 +1486,12 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
         '</article>';
       }
       function render(list){
-        empty.style.display=list.length?'none':'block';
-        box.innerHTML=[].slice.call(list).reverse().map(card).join('');
+        var active=[].slice.call(list);
+        Object.keys(terminalIntents).forEach(function(id){
+          if(!active.some(function(item){return item.intentId===id || item.paymentId===id;}))active.push(terminalIntents[id]);
+        });
+        empty.style.display=active.length?'none':'block';
+        box.innerHTML=active.reverse().map(card).join('');
       }
       function refreshOnce(){
         fetch('/api/reversible-intents').then(function(r){return r.json();}).then(function(d){render(d.intents || []);}).catch(function(){});
@@ -1489,12 +1500,29 @@ export const renderMobileNotif = () => layout('AgentPay · ReversiblePaymentInte
         fetch('/api/reversible-intents').then(function(r){return r.json();}).then(function(d){
           var list=d.intents || [];
           render(list);
+          if(terminalIntents[intentId]){focusLatest();return;}
           var p=list.find(function(item){return item.intentId===intentId || item.paymentId===intentId;});
           if(p && p.verifier){
             if(p.verifier.allow===false)showToast('Blocked by verifier. Commit is unavailable.','block');
             else showToast('Verified clean. Human can undo or commit.','ok');
             focusLatest();
             return;
+          }
+          if(!p){
+            fetch('/api/payments/'+encodeURIComponent(intentId)).then(function(r){return r.json();}).then(function(payment){
+              if(payment && payment.status==='blocked_by_verifier'){
+                terminalIntents[intentId]=Object.assign({},preparedIntents[intentId] || {},payment,{
+                  intentId:intentId,
+                  paymentId:intentId,
+                  status:'blocked_by_verifier',
+                  verifier:payment.verifier,
+                  molliePaymentId:payment.molliePaymentId
+                });
+                render(list);
+                showToast('Blocked by verifier. Commit is unavailable.','block');
+                focusLatest();
+              }
+            }).catch(function(){});
           }
           if(attempt<10)setTimeout(function(){waitForIntent(intentId,scenario,attempt+1);},250);
           else {showToast(scenario==='liar'?'Verifier still running. Refreshing wallet...':'Payment request prepared. Money has not moved.');focusLatest();}
