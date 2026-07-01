@@ -27,6 +27,6 @@ jobs:
       - name: Audit public-safe content
         run: npm run audit:publish
       - name: Check JavaScript syntax
-        run: find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check
+        run: npm run check
       - name: Run tests
         run: npm test

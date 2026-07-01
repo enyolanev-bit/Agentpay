@@ -37,6 +37,9 @@ the provider path so AgentPay owns the price server-side.
 | Tool | Purpose |
 |---|---|
 | `agentpay.prepare_payment` | Prepare a payment before money moves. Provider-based calls keep amount server-owned. |
+| `agentpay.list_spend_options` | List deterministic spend options that agents can request without owning prices. |
+| `agentpay.preview_credit_spend` | Preview policy, budget, and next action for one credit provider without moving money. |
+| `agentpay.list_credit_spend_plans` | List authenticated no-money-moved policy preflights for all credit providers. |
 | `agentpay.create_reversible_intent` | Prepare a payment without moving money. |
 | `agentpay.list_pending_intents` | List pending reversible intents. |
 | `agentpay.undo_intent` | Cancel a reversible intent before capture. |
@@ -57,6 +60,19 @@ the provider path so AgentPay owns the price server-side.
 ```
 
 Expected result: a prepared intent with `molliePaymentId:null`.
+
+To let an agent inspect allowed credit spend before it prepares an intent:
+
+```json
+{
+  "name": "agentpay.list_credit_spend_plans",
+  "arguments": {}
+}
+```
+
+Expected result: policy preflights for the deterministic provider catalog with
+`moneyMovement:"none_until_buy_credits_then_confirm_or_commit"` and
+`molliePaymentId:null`.
 
 For app-owned generic amounts, pass integer `amountCents` from deterministic
 application code:

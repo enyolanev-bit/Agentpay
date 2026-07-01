@@ -1064,6 +1064,7 @@ export const renderEarnDemo = ({ account }) => {
 export const renderCreditTopupDemo = ({ account }) => {
   const agents = agentsForAccount(account.id);
   const payer = agents.find((agent) => agent.role === 'payer') ?? agents[0] ?? null;
+  const agentToken = payer?.token ?? '';
   const providerCards = creditTopupProviders().map((scenario) => `
     <div class="step">
       <div class="k">${escapeHtml(scenario.provider)}</div>
@@ -1116,7 +1117,7 @@ export const renderCreditTopupDemo = ({ account }) => {
           <button type="button" data-scenario="firecrawl">Firecrawl credits</button>
           <button type="button" data-scenario="browserbase">Browserbase hours</button>
         </div>
-        <div id="credit-console" class="event-stream">
+        <div id="credit-console" class="event-stream" data-agent-token="${escapeHtml(agentToken)}">
           <div class="event-line"><span>ready</span><b>Pick a credit provider to prepare a payment request.</b></div>
         </div>
       </div>
@@ -1184,6 +1185,7 @@ export const renderCreditTopupDemo = ({ account }) => {
         var claim=document.getElementById('credit-claim');
         var mollie=document.getElementById('credit-mollie');
         var recent=document.getElementById('credit-recent');
+        var token=out.getAttribute('data-agent-token');
         function esc(value){var d=document.createElement('div');d.textContent=value == null ? '' : String(value);return d.innerHTML;}
         function money(value){var n=Number(value);if(!Number.isFinite(n))return '—';return n.toFixed(2).replace('.',',')+' EUR';}
         function statusLabel(value){return value === 'pending_reversible' ? 'Pending review' : String(value || '—');}
@@ -1211,12 +1213,25 @@ export const renderCreditTopupDemo = ({ account }) => {
             btn.disabled=true;
             out.innerHTML='';
             line('agent.request','credit provider: '+scenario);
-            fetch('/demo/credit-topup',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({scenario:scenario})})
+            if(!token){
+              line('error','no agent token available');
+              summary.textContent='Create a payer agent before preparing spend.';
+              btn.disabled=false;
+              return;
+            }
+            var headers={'Content-Type':'application/json',Accept:'application/json',Authorization:'Bearer '+token};
+            fetch('/agent/credit-plan',{method:'POST',headers:headers,body:JSON.stringify({provider:scenario})})
+              .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+              .then(function(plan){
+                line('policy.preview',plan.policy && plan.policy.decision ? plan.policy.decision : 'policy returned');
+                line('budget','remaining after: '+(plan.budget && plan.budget.remainingTodayAfter ? plan.budget.remainingTodayAfter+' '+plan.currency : 'unknown'));
+                headers['Idempotency-Key']='agentpay-ui:'+scenario+':'+Date.now();
+                return fetch('/agent/credit-topup',{method:'POST',headers:headers,body:JSON.stringify({provider:scenario})});
+              })
               .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
               .then(function(data){
-                line('policy',data.policy && data.policy.decision ? data.policy.decision : 'policy returned');
-                line('verifier',data.verifier ? (data.verifier.allow ? 'allow' : 'block')+' · '+data.verifier.reason : 'verifier returned');
                 line('intent.created',data.intentId+' · molliePaymentId='+(data.molliePaymentId || 'null'));
+                line('verifier',data.verifier ? (data.verifier.allow ? 'allow' : 'block')+' · '+data.verifier.reason : 'verifier returned');
                 amount.textContent=money(Number(data.amount));
                 status.textContent=statusLabel(data.status);
                 payee.textContent=data.merchant || '—';
@@ -1227,7 +1242,7 @@ export const renderCreditTopupDemo = ({ account }) => {
               })
               .catch(function(err){
                 line('error',err.message);
-                summary.textContent='Demo failed: '+err.message;
+                summary.textContent='Request failed: '+err.message;
               })
               .finally(function(){btn.disabled=false;});
           });

@@ -28,6 +28,39 @@ const tools = [
     },
   },
   {
+    name: 'agentpay.list_spend_options',
+    description: 'List deterministic spend options that agents may request without owning prices.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'agentpay.preview_credit_spend',
+    description: 'Preview policy, budget, and next action for a deterministic credit provider without moving money.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        provider: { type: 'string', description: 'Deterministic credit provider, for example "openrouter".' },
+        token: { type: 'string', description: 'Optional AgentPay agent token. Defaults to AGENTPAY_AGENT_TOKEN.' },
+      },
+      required: ['provider'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'agentpay.list_credit_spend_plans',
+    description: 'List authenticated no-money-moved policy preflights for all deterministic credit providers.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        token: { type: 'string', description: 'Optional AgentPay agent token. Defaults to AGENTPAY_AGENT_TOKEN.' },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'agentpay.create_reversible_intent',
     description: 'Create a ReversiblePaymentIntent. Money does not move until confirm or auto-commit.',
     inputSchema: {
@@ -233,6 +266,18 @@ const callTool = async (name, args = {}) => {
           claim: args.claim ?? args.description ?? args.reason,
         },
       });
+    case 'agentpay.list_spend_options':
+      return httpJson('/agent/credit-topups');
+    case 'agentpay.preview_credit_spend':
+      requireToken(args);
+      return httpJson('/agent/credit-plan', {
+        method: 'POST',
+        token: args.token,
+        body: { provider: args.provider },
+      });
+    case 'agentpay.list_credit_spend_plans':
+      requireToken(args);
+      return httpJson('/agent/credit-plans', { token: args.token });
     case 'agentpay.create_reversible_intent':
       requireToken(args);
       return httpJson('/agent/pay-reversible', {

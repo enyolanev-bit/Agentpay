@@ -316,6 +316,296 @@ test('planCreditSpend returns a no-money-moved spend plan for an agent run', asy
   assert.equal(plan.molliePaymentId, null);
 });
 
+test('planCreditSpend uses authenticated policy preview when an agent token is available', async () => {
+  const calls = [];
+  const client = new AgentPayClient({
+    baseUrl: 'http://agentpay.test',
+    agentToken: 'tok_demo',
+    fetch: async (url, init) => {
+      calls.push({ url: String(url), init });
+      return response({
+        type: 'CreditSpendPlan',
+        provider: 'openrouter',
+        amount: '25.00',
+        currency: 'EUR',
+        merchant: 'OpenRouter',
+        spendType: 'inference_credits',
+        policy: { decision: 'AUTO_APPROVE', reasons: ['within budget'] },
+        budget: {
+          maxPerTx: '25.00',
+          maxPerDay: '100.00',
+          approvalThreshold: '15.00',
+          spentToday: '0.00',
+          remainingTodayBefore: '100.00',
+          remainingTodayAfter: '75.00',
+          allowedMerchants: ['OpenRouter'],
+        },
+        nextAction: 'buyCredits',
+        moneyMovement: 'none_until_buy_credits_then_confirm_or_commit',
+        molliePaymentId: null,
+      });
+    },
+  });
+
+  const plan = await client.planCreditSpend({ provider: 'OpenRouter', runId: 'run-999' });
+
+  assert.equal(plan.provider, 'openrouter');
+  assert.equal(plan.policy.decision, 'AUTO_APPROVE');
+  assert.equal(plan.budget.remainingTodayAfter, '75.00');
+  assert.equal(plan.idempotencyKey, 'agentpay:run-999:credits:openrouter');
+  assert.equal(calls[0].url, 'http://agentpay.test/agent/credit-plan');
+  assert.equal(calls[0].init.method, 'POST');
+  assert.equal(calls[0].init.headers.Authorization, 'Bearer tok_demo');
+  assert.deepEqual(JSON.parse(calls[0].init.body), { provider: 'OpenRouter' });
+});
+
+test('listCreditSpendPlans fetches authenticated policy previews for all providers', async () => {
+  const calls = [];
+  const client = new AgentPayClient({
+    baseUrl: 'http://agentpay.test',
+    agentToken: 'tok_demo',
+    fetch: async (url, init) => {
+      calls.push({ url: String(url), init });
+      return response({
+        type: 'CreditSpendPlanList',
+        plans: [
+          {
+            type: 'CreditSpendPlan',
+            provider: 'openrouter',
+            amount: '25.00',
+            spendType: 'inference_credits',
+            policy: { decision: 'AUTO_APPROVE', reasons: ['within budget'] },
+            budget: { remainingTodayAfter: '75.00' },
+            nextAction: 'buyCredits',
+            moneyMovement: 'none_until_buy_credits_then_confirm_or_commit',
+            molliePaymentId: null,
+          },
+        ],
+        buyableProviders: ['openrouter'],
+        moneyMovement: 'none_until_buy_credits_then_confirm_or_commit',
+      });
+    },
+  });
+
+  const catalog = await client.listCreditSpendPlans();
+
+  assert.equal(catalog.type, 'CreditSpendPlanList');
+  assert.equal(catalog.plans[0].provider, 'openrouter');
+  assert.equal(catalog.plans[0].policy.decision, 'AUTO_APPROVE');
+  assert.equal(catalog.buyableProviders[0], 'openrouter');
+  assert.equal(calls[0].url, 'http://agentpay.test/agent/credit-plans');
+  assert.equal(calls[0].init.method, 'GET');
+  assert.equal(calls[0].init.headers.Authorization, 'Bearer tok_demo');
+});
+
+test('pickCreditSpendPlan returns the first buyable non-rejected plan', async () => {
+  const client = new AgentPayClient({
+    agentToken: 'tok_demo',
+    fetch: async () => response({
+      type: 'CreditSpendPlanList',
+      plans: [
+        {
+          provider: 'openrouter',
+          spendType: 'inference_credits',
+          nextAction: 'choose_another_provider_or_policy',
+          policy: { decision: 'REJECTED' },
+        },
+        {
+          provider: 'firecrawl',
+          spendType: 'web_data_credits',
+          nextAction: 'buyCredits',
+          policy: { decision: 'AUTO_APPROVE' },
+          molliePaymentId: null,
+        },
+      ],
+      buyableProviders: ['firecrawl'],
+    }),
+  });
+
+  const plan = await client.pickCreditSpendPlan();
+
+  assert.equal(plan.provider, 'firecrawl');
+  assert.equal(plan.spendType, 'web_data_credits');
+  assert.equal(plan.molliePaymentId, null);
+});
+
+test('pickCreditSpendPlan can filter by spend type', async () => {
+  const client = new AgentPayClient({
+    fetch: async () => response({
+      plans: [
+        {
+          provider: 'openrouter',
+          spendType: 'inference_credits',
+          nextAction: 'buyCredits',
+          policy: { decision: 'AUTO_APPROVE' },
+        },
+        {
+          provider: 'browserbase',
+          spendType: 'browser_automation_credits',
+          nextAction: 'buyCredits',
+          policy: { decision: 'AUTO_APPROVE' },
+        },
+      ],
+      buyableProviders: ['openrouter', 'browserbase'],
+    }),
+  });
+
+  const plan = await client.pickCreditSpendPlan({ spendType: 'browser_automation_credits' });
+
+  assert.equal(plan.provider, 'browserbase');
+});
+
+test('pickCreditSpendPlan rejects when no matching plan is buyable', async () => {
+  const client = new AgentPayClient({
+    fetch: async () => response({
+      plans: [
+        {
+          provider: 'openrouter',
+          spendType: 'inference_credits',
+          nextAction: 'choose_another_provider_or_policy',
+          policy: { decision: 'REJECTED' },
+        },
+      ],
+      buyableProviders: [],
+    }),
+  });
+
+  await assert.rejects(
+    () => client.pickCreditSpendPlan({ spendType: 'browser_automation_credits' }),
+    (err) => {
+      assert.ok(err instanceof AgentPayError);
+      assert.equal(err.status, 409);
+      assert.equal(err.message, 'no buyable credit spend plan is available.');
+      assert.deepEqual(err.body.buyableProviders, []);
+      return true;
+    },
+  );
+});
+
+test('summarizeCreditSpendControl returns selected provider, blocked providers, and budget', async () => {
+  const calls = [];
+  const client = new AgentPayClient({
+    baseUrl: 'http://agentpay.test',
+    agentToken: 'tok_demo',
+    fetch: async (url, init) => {
+      calls.push({ url: String(url), init });
+      return response({
+        type: 'CreditSpendPlanList',
+        plans: [
+          {
+            provider: 'openrouter',
+            spendType: 'inference_credits',
+            nextAction: 'choose_another_provider_or_policy',
+            policy: { decision: 'REJECTED' },
+            budget: { remainingTodayAfter: '0.00' },
+          },
+          {
+            provider: 'firecrawl',
+            spendType: 'web_data_credits',
+            nextAction: 'buyCredits',
+            policy: { decision: 'AUTO_APPROVE' },
+            budget: {
+              maxPerDay: '100.00',
+              spentToday: '20.00',
+              remainingTodayAfter: '64.00',
+            },
+            molliePaymentId: null,
+          },
+        ],
+        buyableProviders: ['firecrawl'],
+        moneyMovement: 'none_until_buy_credits_then_confirm_or_commit',
+      });
+    },
+  });
+
+  const summary = await client.summarizeCreditSpendControl();
+
+  assert.equal(summary.type, 'CreditSpendControlSummary');
+  assert.equal(summary.totalPlans, 2);
+  assert.deepEqual(summary.buyableProviders, ['firecrawl']);
+  assert.deepEqual(summary.blockedProviders, ['openrouter']);
+  assert.equal(summary.selectedProvider, 'firecrawl');
+  assert.equal(summary.selectedPlan.molliePaymentId, null);
+  assert.equal(summary.budget.remainingTodayAfter, '64.00');
+  assert.equal(summary.nextAction, 'buyCredits');
+  assert.equal(summary.moneyMovement, 'none_until_buy_credits_then_confirm_or_commit');
+  assert.equal(summary.molliePaymentId, null);
+  assert.equal(calls[0].url, 'http://agentpay.test/agent/credit-plans');
+  assert.equal(calls[0].init.headers.Authorization, 'Bearer tok_demo');
+});
+
+test('summarizeCreditSpendControl can focus on one spend type', async () => {
+  const client = new AgentPayClient({
+    fetch: async () => response({
+      plans: [
+        {
+          provider: 'openrouter',
+          spendType: 'inference_credits',
+          nextAction: 'buyCredits',
+          policy: { decision: 'AUTO_APPROVE' },
+        },
+        {
+          provider: 'browserbase',
+          spendType: 'browser_automation_credits',
+          nextAction: 'buyCredits',
+          policy: { decision: 'AUTO_APPROVE' },
+          budget: { remainingTodayAfter: '80.00' },
+        },
+      ],
+      buyableProviders: ['openrouter', 'browserbase'],
+    }),
+  });
+
+  const summary = await client.summarizeCreditSpendControl({
+    spendType: 'browser_automation_credits',
+  });
+
+  assert.equal(summary.totalPlans, 1);
+  assert.equal(summary.spendType, 'browser_automation_credits');
+  assert.deepEqual(summary.buyableProviders, ['browserbase']);
+  assert.deepEqual(summary.blockedProviders, []);
+  assert.equal(summary.selectedProvider, 'browserbase');
+  assert.equal(summary.budget.remainingTodayAfter, '80.00');
+});
+
+test('summarizeCreditSpendControl reports policy action when no plan is buyable', async () => {
+  const client = new AgentPayClient({
+    fetch: async () => response({
+      plans: [
+        {
+          provider: 'openrouter',
+          spendType: 'inference_credits',
+          nextAction: 'choose_another_provider_or_policy',
+          policy: { decision: 'REJECTED' },
+        },
+      ],
+      buyableProviders: [],
+    }),
+  });
+
+  const summary = await client.summarizeCreditSpendControl();
+
+  assert.equal(summary.selectedPlan, null);
+  assert.equal(summary.selectedProvider, null);
+  assert.deepEqual(summary.buyableProviders, []);
+  assert.deepEqual(summary.blockedProviders, ['openrouter']);
+  assert.equal(summary.nextAction, 'choose_another_provider_or_policy');
+  assert.equal(summary.molliePaymentId, null);
+});
+
+test('previewCreditSpend requires a provider', async () => {
+  const client = new AgentPayClient({ fetch: async () => response({}) });
+
+  await assert.rejects(
+    () => client.previewCreditSpend(),
+    (err) => {
+      assert.ok(err instanceof AgentPayError);
+      assert.equal(err.message, 'provider is required.');
+      return true;
+    },
+  );
+});
+
 test('buyCredits requires a provider', async () => {
   const client = new AgentPayClient({ fetch: async () => response({}) });
 

@@ -8,6 +8,15 @@ http://localhost:3000
 
 Local MVP state is persisted to `AGENTPAY_DATA_FILE` when configured.
 
+## Health
+
+```http
+GET /api/health
+```
+
+Returns public deployment state such as sandbox/payment-rail mode, verifier
+mode, and whether money movement is simulated. It does not expose secrets.
+
 Agent endpoints use bearer tokens created in the dashboard.
 For the seeded local demo account, fetch one with:
 
@@ -163,6 +172,86 @@ Response:
 }
 ```
 
+Authenticated no-money-moved policy preflight:
+
+```http
+POST /agent/credit-plan
+Authorization: Bearer <AGENT_TOKEN>
+```
+
+```json
+{
+  "provider": "openrouter"
+}
+```
+
+Response:
+
+```json
+{
+  "type": "CreditSpendPlan",
+  "provider": "openrouter",
+  "amount": "25.00",
+  "currency": "EUR",
+  "merchant": "OpenRouter",
+  "spendType": "inference_credits",
+  "policy": {
+    "decision": "AUTO_APPROVE",
+    "reasons": ["Dans la policy"]
+  },
+  "budget": {
+    "maxPerTx": "25.00",
+    "maxPerDay": "100.00",
+    "approvalThreshold": "15.00",
+    "spentToday": "0.00",
+    "remainingTodayBefore": "100.00",
+    "remainingTodayAfter": "75.00",
+    "allowedMerchants": ["OpenRouter"]
+  },
+  "nextAction": "buyCredits",
+  "moneyMovement": "none_until_buy_credits_then_confirm_or_commit",
+  "molliePaymentId": null
+}
+```
+
+Authenticated full-catalog policy preflight:
+
+```http
+GET /agent/credit-plans
+Authorization: Bearer <AGENT_TOKEN>
+```
+
+Response:
+
+```json
+{
+  "type": "CreditSpendPlanList",
+  "plans": [
+    {
+      "type": "CreditSpendPlan",
+      "provider": "openrouter",
+      "amount": "25.00",
+      "currency": "EUR",
+      "merchant": "OpenRouter",
+      "spendType": "inference_credits",
+      "policy": {
+        "decision": "AUTO_APPROVE",
+        "reasons": ["Dans la policy"]
+      },
+      "budget": {
+        "remainingTodayBefore": "100.00",
+        "remainingTodayAfter": "75.00"
+      },
+      "nextAction": "buyCredits",
+      "moneyMovement": "none_until_buy_credits_then_confirm_or_commit",
+      "molliePaymentId": null
+    }
+  ],
+  "buyableProviders": ["openrouter"],
+  "moneyMovement": "none_until_buy_credits_then_confirm_or_commit"
+}
+```
+
 ```http
 POST /agent/credit-topup
 ```
@@ -224,6 +313,9 @@ The MCP server should be a thin wrapper over the HTTP API:
 | MCP tool | HTTP operation |
 |---|---|
 | `agentpay.prepare_payment` | `POST /agent/credit-topup` when `provider` is set, otherwise `POST /agent/pay-reversible` |
+| `agentpay.list_spend_options` | `GET /agent/credit-topups` |
+| `agentpay.preview_credit_spend` | `POST /agent/credit-plan` |
+| `agentpay.list_credit_spend_plans` | `GET /agent/credit-plans` |
 | `agentpay.create_reversible_intent` | `POST /agent/pay-reversible` |
 | `agentpay.list_pending_intents` | `GET /api/reversible-intents` |
 | `agentpay.undo_intent` | `POST /pay/:id/undo` |
