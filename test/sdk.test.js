@@ -398,6 +398,90 @@ test('listCreditSpendPlans fetches authenticated policy previews for all provide
   assert.equal(calls[0].init.headers.Authorization, 'Bearer tok_demo');
 });
 
+test('pickCreditSpendPlan returns the first buyable non-rejected plan', async () => {
+  const client = new AgentPayClient({
+    agentToken: 'tok_demo',
+    fetch: async () => response({
+      type: 'CreditSpendPlanList',
+      plans: [
+        {
+          provider: 'openrouter',
+          spendType: 'inference_credits',
+          nextAction: 'choose_another_provider_or_policy',
+          policy: { decision: 'REJECTED' },
+        },
+        {
+          provider: 'firecrawl',
+          spendType: 'web_data_credits',
+          nextAction: 'buyCredits',
+          policy: { decision: 'AUTO_APPROVE' },
+          molliePaymentId: null,
+        },
+      ],
+      buyableProviders: ['firecrawl'],
+    }),
+  });
+
+  const plan = await client.pickCreditSpendPlan();
+
+  assert.equal(plan.provider, 'firecrawl');
+  assert.equal(plan.spendType, 'web_data_credits');
+  assert.equal(plan.molliePaymentId, null);
+});
+
+test('pickCreditSpendPlan can filter by spend type', async () => {
+  const client = new AgentPayClient({
+    fetch: async () => response({
+      plans: [
+        {
+          provider: 'openrouter',
+          spendType: 'inference_credits',
+          nextAction: 'buyCredits',
+          policy: { decision: 'AUTO_APPROVE' },
+        },
+        {
+          provider: 'browserbase',
+          spendType: 'browser_automation_credits',
+          nextAction: 'buyCredits',
+          policy: { decision: 'AUTO_APPROVE' },
+        },
+      ],
+      buyableProviders: ['openrouter', 'browserbase'],
+    }),
+  });
+
+  const plan = await client.pickCreditSpendPlan({ spendType: 'browser_automation_credits' });
+
+  assert.equal(plan.provider, 'browserbase');
+});
+
+test('pickCreditSpendPlan rejects when no matching plan is buyable', async () => {
+  const client = new AgentPayClient({
+    fetch: async () => response({
+      plans: [
+        {
+          provider: 'openrouter',
+          spendType: 'inference_credits',
+          nextAction: 'choose_another_provider_or_policy',
+          policy: { decision: 'REJECTED' },
+        },
+      ],
+      buyableProviders: [],
+    }),
+  });
+
+  await assert.rejects(
+    () => client.pickCreditSpendPlan({ spendType: 'browser_automation_credits' }),
+    (err) => {
+      assert.ok(err instanceof AgentPayError);
+      assert.equal(err.status, 409);
+      assert.equal(err.message, 'no buyable credit spend plan is available.');
+      assert.deepEqual(err.body.buyableProviders, []);
+      return true;
+    },
+  );
+});
+
 test('previewCreditSpend requires a provider', async () => {
   const client = new AgentPayClient({ fetch: async () => response({}) });
 

@@ -101,6 +101,29 @@ export class AgentPayClient {
     return this.#json('/agent/credit-plans', { token });
   }
 
+  async pickCreditSpendPlan({ spendType, token } = {}) {
+    const catalog = await this.listCreditSpendPlans({ token });
+    const plans = Array.isArray(catalog.plans) ? catalog.plans : [];
+    const buyableProviders = new Set(catalog.buyableProviders ?? []);
+    const plan = plans.find((item) => {
+      if (spendType && item.spendType !== spendType) return false;
+      if (item.nextAction !== 'buyCredits') return false;
+      if (item.policy?.decision === 'REJECTED') return false;
+      return buyableProviders.size === 0 || buyableProviders.has(item.provider);
+    });
+
+    if (!plan) {
+      throw new AgentPayError('no buyable credit spend plan is available.', {
+        status: 409,
+        body: {
+          spendType,
+          buyableProviders: catalog.buyableProviders ?? [],
+        },
+      });
+    }
+    return plan;
+  }
+
   async quoteCredits({ provider } = {}) {
     if (!provider) throw new AgentPayError('provider is required.');
     const catalog = await this.listSpendOptions();

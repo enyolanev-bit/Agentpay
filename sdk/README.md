@@ -32,6 +32,9 @@ undo, and audit from server-side code.
 ```js
 const spendOptions = await agentpay.listSpendOptions();
 const spendPlans = await agentpay.listCreditSpendPlans();
+const selectedPlan = await agentpay.pickCreditSpendPlan({
+  spendType: 'inference_credits',
+});
 const option = await agentpay.quoteCredits({ provider: 'openrouter' });
 const plan = await agentpay.planCreditSpend({
   provider: 'openrouter',
@@ -45,6 +48,7 @@ const intent = await agentpay.buyCredits({
 
 console.log(option.spendType);
 console.log(spendPlans.buyableProviders);
+console.log(selectedPlan.provider); // first buyable provider for that spend type
 console.log(option.amount); // deterministic, server-owned amount
 console.log(plan.policy?.decision); // returned when authenticated
 console.log(plan.moneyMovement); // none_until_buy_credits_then_confirm_or_commit
@@ -61,6 +65,8 @@ a run. Without a token, it falls back to the public catalog quote. In both cases
 no money moves at the planning step.
 `listCreditSpendPlans()` returns the same authenticated preflight for every
 provider so an agent can choose a buyable option without trial-and-error.
+`pickCreditSpendPlan()` selects the first buyable, non-rejected plan, optionally
+filtered by spend type, without letting the agent invent a provider price.
 
 Lower-level reversible intent for app-owned amounts:
 
@@ -90,6 +96,7 @@ invent amounts.
 - `quoteCredits({ provider })`
 - `previewCreditSpend({ provider })`
 - `listCreditSpendPlans()`
+- `pickCreditSpendPlan({ spendType })`
 - `planCreditSpend({ provider, runId })`
 - `buyCredits({ provider, runId })`
 - `listPendingIntents()`
