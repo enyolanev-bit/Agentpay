@@ -47,6 +47,17 @@ app.use(express.json());                           // API agent (JSON)
 // Pour la demo : un seul compte "courant". Cree au boot via seed, ou via le formulaire.
 let currentAccountId = seedDemo();
 
+app.get('/api/health', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'agentpay',
+    mode: process.env.SIMULATE_PAYMENTS === '1' ? 'sandbox' : 'payment-rail-configured',
+    deciderMode: process.env.DECIDER_MODE ?? 'codex',
+    verifierMode: process.env.VERIFIER_MODE ?? 'codex',
+    moneyMovement: process.env.SIMULATE_PAYMENTS === '1' ? 'simulated' : 'configured_by_environment',
+  });
+});
+
 const reversibleIntentDto = (payment) => ({
   intentId: payment.id,
   paymentId: payment.id,

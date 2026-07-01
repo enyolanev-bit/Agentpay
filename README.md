@@ -99,6 +99,7 @@ Open:
 - `http://localhost:3000/audit` for the audit trail;
 - `http://localhost:3000/task` for the live agent demo.
 - `http://localhost:3000/earn` for the agent revenue demo.
+- `http://localhost:3000/api/health` for deployment health.
 
 Get the demo agent token for API calls:
 

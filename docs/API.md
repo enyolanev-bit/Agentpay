@@ -8,6 +8,15 @@ http://localhost:3000
 
 Local MVP state is persisted to `AGENTPAY_DATA_FILE` when configured.
 
+## Health
+
+```http
+GET /api/health
+```
+
+Returns public deployment state such as sandbox/payment-rail mode, verifier
+mode, and whether money movement is simulated. It does not expose secrets.
+
 Agent endpoints use bearer tokens created in the dashboard.
 For the seeded local demo account, fetch one with:
 
