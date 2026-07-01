@@ -124,6 +124,11 @@ export class AgentPayClient {
     return plan;
   }
 
+  async summarizeCreditSpendControl({ spendType, token } = {}) {
+    const catalog = await this.listCreditSpendPlans({ token });
+    return summarizeCreditSpendControl(catalog, { spendType });
+  }
+
   async quoteCredits({ provider } = {}) {
     if (!provider) throw new AgentPayError('provider is required.');
     const catalog = await this.listSpendOptions();
@@ -243,3 +248,32 @@ const centsToDecimalString = (amountCents) => {
 };
 
 const normalizeProvider = (provider) => String(provider ?? '').trim().toLowerCase();
+
+const isBuyablePlan = (plan, buyableProviders) => {
+  if (plan?.nextAction !== 'buyCredits') return false;
+  if (plan?.policy?.decision === 'REJECTED') return false;
+  return buyableProviders.size === 0 || buyableProviders.has(plan.provider);
+};
+
+const summarizeCreditSpendControl = (catalog, { spendType } = {}) => {
+  const plans = Array.isArray(catalog?.plans) ? catalog.plans : [];
+  const buyableProviderSet = new Set(catalog?.buyableProviders ?? []);
+  const matchingPlans = spendType ? plans.filter((plan) => plan.spendType === spendType) : plans;
+  const buyablePlans = matchingPlans.filter((plan) => isBuyablePlan(plan, buyableProviderSet));
+  const blockedPlans = matchingPlans.filter((plan) => !isBuyablePlan(plan, buyableProviderSet));
+  const selectedPlan = buyablePlans[0] ?? null;
+
+  return {
+    type: 'CreditSpendControlSummary',
+    spendType: spendType ?? null,
+    totalPlans: matchingPlans.length,
+    buyableProviders: buyablePlans.map((plan) => plan.provider),
+    blockedProviders: blockedPlans.map((plan) => plan.provider),
+    selectedPlan,
+    selectedProvider: selectedPlan?.provider ?? null,
+    budget: selectedPlan?.budget ?? null,
+    nextAction: selectedPlan ? 'buyCredits' : 'choose_another_provider_or_policy',
+    moneyMovement: catalog?.moneyMovement ?? 'none_until_buy_credits_then_confirm_or_commit',
+    molliePaymentId: null,
+  };
+};

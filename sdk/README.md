@@ -32,6 +32,7 @@ undo, and audit from server-side code.
 ```js
 const spendOptions = await agentpay.listSpendOptions();
 const spendPlans = await agentpay.listCreditSpendPlans();
+const spendControl = await agentpay.summarizeCreditSpendControl();
 const selectedPlan = await agentpay.pickCreditSpendPlan({
   spendType: 'inference_credits',
 });
@@ -48,6 +49,8 @@ const intent = await agentpay.buyCredits({
 
 console.log(option.spendType);
 console.log(spendPlans.buyableProviders);
+console.log(spendControl.selectedProvider); // first buyable provider, or null
+console.log(spendControl.budget?.remainingTodayAfter); // budget after selected buy
 console.log(selectedPlan.provider); // first buyable provider for that spend type
 console.log(option.amount); // deterministic, server-owned amount
 console.log(plan.policy?.decision); // returned when authenticated
@@ -65,6 +68,10 @@ a run. Without a token, it falls back to the public catalog quote. In both cases
 no money moves at the planning step.
 `listCreditSpendPlans()` returns the same authenticated preflight for every
 provider so an agent can choose a buyable option without trial-and-error.
+`summarizeCreditSpendControl()` turns those preflights into the spend-control
+status an agent runtime usually needs: selected provider, blocked providers,
+remaining budget for the selected provider, next action, and
+`molliePaymentId: null`.
 `pickCreditSpendPlan()` selects the first buyable, non-rejected plan, optionally
 filtered by spend type, without letting the agent invent a provider price.
 
@@ -96,6 +103,7 @@ invent amounts.
 - `quoteCredits({ provider })`
 - `previewCreditSpend({ provider })`
 - `listCreditSpendPlans()`
+- `summarizeCreditSpendControl({ spendType })`
 - `pickCreditSpendPlan({ spendType })`
 - `planCreditSpend({ provider, runId })`
 - `buyCredits({ provider, runId })`
@@ -109,4 +117,6 @@ The SDK does not compute amounts or bypass policy. It only calls the AgentPay AP
 Use `quoteCredits()` when an agent UI needs to show the deterministic price and
 control surface before preparing a reversible intent. Use `planCreditSpend()`
 when an agent runtime needs a stable preflight object before it calls
-`buyCredits()`.
+`buyCredits()`. Use `summarizeCreditSpendControl()` when an agent needs one
+object for spend-control UI or autonomous provider selection before creating an
+intent.
