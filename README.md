@@ -1,8 +1,8 @@
 # AgentPay
 
-**Spend control for AI agents, with an undo button.**
+**Agent checkout with spend control and an undo button.**
 
-AgentPay is a trust layer for AI-agent payments. It lets a human connect agents, set spending rules, audit every decision, and keep a short undo window before money moves. A common use case is agents buying credits or paid capacity, such as inference credits, web-data credits, and browser automation hours. Mollie is the first payment rail; AgentPay is the policy, verification, reversibility, and audit layer above payment providers.
+AgentPay is a checkout and control layer for AI-agent payments. Agents call one API before they spend; AgentPay applies deterministic policy, adversarial verification, human gates, reversibility, and audit before money can move. A common use case is agents buying credits or paid capacity, such as inference credits, web-data credits, and browser automation hours. Mollie is the first payment rail; AgentPay is the policy, verification, reversibility, and audit layer above payment providers.
 
 ![AgentPay mobile undo wallet showing a clean reversible intent and a Codex-blocked suspicious intent](docs/assets/mobile-wallet.png)
 
@@ -17,6 +17,23 @@ AgentPay closes that loop:
 - an adversarial verifier can block suspicious requests;
 - humans keep liability gates for high-risk actions;
 - reversible intents delay capture until the undo window expires or the human confirms.
+
+## Agent Checkout Flow
+
+The product path is intentionally narrow:
+
+```text
+agent.preparePayment()
+  -> ReversiblePaymentIntent
+  -> deterministic policy
+  -> adversarial verifier
+  -> human approval when needed
+  -> undo or commit
+```
+
+Agents choose the approved action they need. AgentPay owns the amount, merchant,
+claim, policy preview, idempotency key, undo window, and audit trail whenever a
+server-side provider is available.
 
 ## Core Primitive
 
@@ -63,7 +80,7 @@ An agent can prepare a payment, but AgentPay keeps `molliePaymentId:null` until 
 ## Quickstart
 
 ```bash
-git clone https://github.com/your-org/agentpay.git
+git clone <REPO_URL>
 cd agentpay
 npm install
 SIMULATE_PAYMENTS=1 \
@@ -220,6 +237,9 @@ curl -X POST http://localhost:3000/agent/pay-agent \
 AgentPay exposes the same trust layer through MCP so agents can request payment permissions naturally:
 
 - `agentpay.prepare_payment`
+- `agentpay.list_spend_options`
+- `agentpay.preview_credit_spend`
+- `agentpay.list_credit_spend_plans`
 - `agentpay.create_reversible_intent`
 - `agentpay.list_pending_intents`
 - `agentpay.undo_intent`
@@ -270,7 +290,18 @@ Do not use live Mollie keys unless you explicitly intend to move real money.
 
 ## Status
 
-This is an early MVP. It is useful for demos, prototypes, and design exploration. Local JSON persistence is available for MVP durability. Before production use, AgentPay needs a SQL storage adapter, stronger auth, PSP error handling, hosted webhooks, observability, and a production security review.
+This is an early agent-checkout MVP. It is useful for local demos, prototypes, and design exploration. Local JSON persistence is available for MVP durability.
+
+Safe local mode:
+
+- `SIMULATE_PAYMENTS=1`
+- `DECIDER_MODE=fallback`
+- `VERIFIER_MODE=heuristic`
+- test Mollie key or dummy key only
+
+Before production use, AgentPay needs a SQL storage adapter, stronger auth,
+stronger token storage, PSP error handling, hosted webhooks, observability,
+rate limits, and a production security review.
 
 ## Contributing and Security
 

@@ -304,6 +304,9 @@ The MCP server should be a thin wrapper over the HTTP API:
 | MCP tool | HTTP operation |
 |---|---|
 | `agentpay.prepare_payment` | `POST /agent/credit-topup` when `provider` is set, otherwise `POST /agent/pay-reversible` |
+| `agentpay.list_spend_options` | `GET /agent/credit-topups` |
+| `agentpay.preview_credit_spend` | `POST /agent/credit-plan` |
+| `agentpay.list_credit_spend_plans` | `GET /agent/credit-plans` |
 | `agentpay.create_reversible_intent` | `POST /agent/pay-reversible` |
 | `agentpay.list_pending_intents` | `GET /api/reversible-intents` |
 | `agentpay.undo_intent` | `POST /pay/:id/undo` |
